@@ -220,6 +220,14 @@ namespace Yellow.Core.Utils
             }
         }
 
+        public Vec2 Perpendicular
+        {
+            get
+            {
+                return new Vec2(-y, x);
+            }
+        }
+
         public Vec2 Multiply(float scalar)
         {
             x *= scalar;
