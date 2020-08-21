@@ -50,7 +50,7 @@ namespace Yellow.Core.Components
 
             set
             {
-                position.x = value;
+                position.SetX(value);
                 updateNeeded = true;
             }
         }
@@ -64,7 +64,7 @@ namespace Yellow.Core.Components
 
             set
             {
-                position.y = value;
+                position.SetY(value);
                 updateNeeded = true;
             }
         }
@@ -78,7 +78,7 @@ namespace Yellow.Core.Components
 
             set
             {
-                scale.x = value;
+                scale.SetX(x);
                 updateNeeded = true;
             }
         }
@@ -92,7 +92,7 @@ namespace Yellow.Core.Components
 
             set
             {
-                scale.y = value;
+                scale.SetY(value);
                 updateNeeded = true;
             }
         }
@@ -106,7 +106,7 @@ namespace Yellow.Core.Components
 
             set
             {
-                pivot.x = value;
+                pivot.SetX(value);
                 updateNeeded = true;
             }
         }
@@ -120,7 +120,7 @@ namespace Yellow.Core.Components
 
             set
             {
-                pivot.y = value;
+                pivot.SetY(value);
                 updateNeeded = true;
             }
         }
@@ -129,8 +129,7 @@ namespace Yellow.Core.Components
 
         public TransformComponent Translate(float x, float y)
         {
-            position.x += x;
-            position.y += y;
+            position.Add(x, y);
             updateNeeded = true;
 
             return this;
@@ -138,8 +137,7 @@ namespace Yellow.Core.Components
 
         public TransformComponent Translate(Vec2 movement)
         {
-            position.x += movement.x;
-            position.y += movement.y;
+            position.Add(movement);
             updateNeeded = true;
 
             return this;
@@ -154,8 +152,7 @@ namespace Yellow.Core.Components
 
         public TransformComponent Scale(float x, float y)
         {
-            scale.x *= x;
-            scale.y *= y;
+            scale.Multiply(x, y);
             updateNeeded = true;
 
             return this;
@@ -163,8 +160,7 @@ namespace Yellow.Core.Components
 
         public TransformComponent Scale(Vec2 scale)
         {
-            this.scale.x *= scale.x;
-            this.scale.y *= scale.y;
+            this.scale.Multiply(scale);
             updateNeeded = true;
 
             return this;
