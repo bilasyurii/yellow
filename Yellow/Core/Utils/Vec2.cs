@@ -8,16 +8,6 @@ namespace Yellow.Core.Utils
 
         public float y;
 
-        public static readonly Vec2 Zero = new Vec2(0, 0);
-
-        public static readonly Vec2 Up = new Vec2(0, -1);
-
-        public static readonly Vec2 Down = new Vec2(0, 1);
-
-        public static readonly Vec2 Left = new Vec2(-1, 0);
-
-        public static readonly Vec2 Right = new Vec2(1, 0);
-
         public Vec2(float x = 0, float y = 0)
         {
             this.x = x;
@@ -30,130 +20,21 @@ namespace Yellow.Core.Utils
             y = other.y;
         }
 
-        public void CopyTo(ref Vec2 destination)
+        public Vec2 Normalized
         {
-            destination.x = x;
-            destination.y = y;
-        }
-
-        public void CopyFrom(in Vec2 source)
-        {
-            x = source.x;
-            y = source.y;
-        }
-
-        public void CopyFrom(Vec2 source)
-        {
-            x = source.x;
-            y = source.y;
-        }
-
-        public void Set(float x, float y)
-        {
-            this.x = x;
-            this.y = y;
-        }
-
-        public void Set(float xy)
-        {
-            x = y = xy;
-        }
-
-        public void SetX(float x)
-        {
-            this.x = x;
-        }
-
-        public void SetY(float y)
-        {
-            this.y = y;
-        }
-
-        public void SetZero()
-        {
-            x = y = 0;
-        }
-
-        public void SetFromRadians(float angle, float length)
-        {
-            var sin = MathF.Sin(angle);
-            var cos = MathF.Cos(angle);
-
-            x = cos * length;
-            y = sin * length;
-        }
-
-        public void SetFromDegrees(float angle, float length)
-        {
-            angle *= Math2.Deg2Rad;
-
-            var sin = MathF.Sin(angle);
-            var cos = MathF.Cos(angle);
-
-            x = cos * length;
-            y = sin * length;
-        }
-
-        public static Vec2 FromRadians(float angle, float length)
-        {
-            var sin = MathF.Sin(angle);
-            var cos = MathF.Cos(angle);
-
-            return new Vec2(cos * length, sin * length);
-        }
-
-        public static Vec2 FromDegrees(float angle, float length)
-        {
-            angle *= Math2.Deg2Rad;
-
-            var sin = MathF.Sin(angle);
-            var cos = MathF.Cos(angle);
-
-            return new Vec2(cos * length, sin * length);
-        }
-
-        public float AngleTo(Vec2 other)
-        {
-            return MathF.Atan2(x * other.y - y * other.x, x * other.x + y * other.y);
-        }
-
-        public static float AngleBetween(Vec2 a, Vec2 b)
-        {
-            var dot = a.x * b.x + a.y * b.y;
-
-            return MathF.Acos(dot / (a.Length * b.Length));
-        }
-
-        public bool Equals(Vec2 other)
-        {
-            return x == other.x && y == other.y;
-        }
-
-        public bool Equals(Vec2 other, float eps)
-        {
-            return MathF.Abs(x - other.x) <= eps && Math.Abs(y - other.y) <= eps;
-        }
-
-        public override string ToString()
-        {
-            return x + " " + y;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (!(obj is Vec2))
+            get
             {
-                return false;
+                var length = Length;
+
+                if (length == 0.0f)
+                {
+                    return Right;
+                }
+                else
+                {
+                    return this / length;
+                }
             }
-
-            Vec2 vec = (Vec2)obj;
-
-            return x == vec.x && y == vec.y;
-        }
-
-        public override int GetHashCode()
-        {
-            return (int) (x * y + x + y);
         }
 
         public float Length
@@ -194,66 +75,11 @@ namespace Yellow.Core.Utils
             }
         }
 
-        public float Dot(Vec2 other)
-        {
-            return x * other.x + y * other.y;
-        }
-
-        public float Cross(Vec2 other)
-        {
-            return x * other.y - y * other.x;
-        }
-
-        public void Normalize()
-        {
-            var length = Length;
-
-            if (length == 0.0f)
-            {
-                CopyFrom(in Right);
-            }
-            else
-            {
-                Multiply(1.0f / length);
-            }
-        }
-
-        public Vec2 Normalized
-        {
-            get
-            {
-                var length = Length;
-
-                if (length == 0.0f)
-                {
-                    return Right;
-                }
-                else
-                {
-                    return this / length;
-                }
-            }
-        }
-
-        public void Invert()
-        {
-            if (x != 0.0f)
-            {
-                x = 1.0f / x;
-            }
-
-            if (y != 0.0f)
-            {
-                y = 1.0f / y;
-            }
-        }
-
         public Vec2 Inverted
         {
             get
             {
                 var clone = this;
-
                 clone.Invert();
 
                 return clone;
@@ -298,32 +124,128 @@ namespace Yellow.Core.Utils
             }
         }
 
-        public void Rotate(float angle)
-        {
-            var sin = MathF.Sin(angle);
-            var cos = MathF.Cos(angle);
-
-            x *= cos - sin;
-            y *= sin + cos;
-        }
-
-        public Vec2 Rotated(float angle)
-        {
-            var sin = MathF.Sin(angle);
-            var cos = MathF.Cos(angle);
-            var clone = this;
-
-            clone.x *= cos - sin;
-            clone.y *= sin + cos;
-
-            return clone;
-        }
-
         public Vec2 Perpendicular
         {
             get
             {
                 return new Vec2(-y, x);
+            }
+        }
+
+        public Vec2 Opposite
+        {
+            get
+            {
+                var clone = this;
+                clone.Negate();
+
+                return clone;
+            }
+        }
+
+        public void CopyTo(ref Vec2 destination)
+        {
+            destination.x = x;
+            destination.y = y;
+        }
+
+        public void CopyFrom(in Vec2 source)
+        {
+            x = source.x;
+            y = source.y;
+        }
+
+        public void CopyFrom(Vec2 source)
+        {
+            x = source.x;
+            y = source.y;
+        }
+
+        public void SetX(float x)
+        {
+            this.x = x;
+        }
+
+        public void SetY(float y)
+        {
+            this.y = y;
+        }
+
+        public void Set(float x, float y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+
+        public void Set(float xy)
+        {
+            x = y = xy;
+        }
+
+        public void SetZero()
+        {
+            x = y = 0;
+        }
+
+        public void SetFromRadians(float angle, float length)
+        {
+            var sin = MathF.Sin(angle);
+            var cos = MathF.Cos(angle);
+
+            x = cos * length;
+            y = sin * length;
+        }
+
+        public void SetFromDegrees(float angle, float length)
+        {
+            angle *= Math2.Deg2Rad;
+
+            var sin = MathF.Sin(angle);
+            var cos = MathF.Cos(angle);
+
+            x = cos * length;
+            y = sin * length;
+        }
+
+        public float AngleTo(Vec2 other)
+        {
+            return MathF.Atan2(x * other.y - y * other.x, x * other.x + y * other.y);
+        }
+
+        public float Dot(Vec2 other)
+        {
+            return x * other.x + y * other.y;
+        }
+
+        public float Cross(Vec2 other)
+        {
+            return x * other.y - y * other.x;
+        }
+
+        public void Normalize()
+        {
+            var length = Length;
+
+            if (length == 0.0f)
+            {
+                CopyFrom(in Right);
+            }
+            else
+            {
+                Multiply(1.0f / length);
+            }
+        }
+
+        public void Invert()
+        {
+            if (x != 0.0f)
+            {
+                x = 1.0f / x;
+            }
+
+            if (y != 0.0f)
+            {
+                y = 1.0f / y;
             }
         }
 
@@ -419,36 +341,6 @@ namespace Yellow.Core.Utils
             y = -other.y;
         }
 
-        public Vec2 Opposite
-        {
-            get
-            {
-                var clone = this;
-
-                clone.Negate();
-
-                return clone;
-            }
-        }
-
-        public void Floor()
-        {
-            x = MathF.Floor(x);
-            y = MathF.Floor(y);
-        }
-
-        public void Ceiling()
-        {
-            x = MathF.Ceiling(x);
-            y = MathF.Ceiling(y);
-        }
-
-        public void Round()
-        {
-            x = MathF.Round(x);
-            y = MathF.Round(y);
-        }
-
         public float Distance(Vec2 other)
         {
             var dX = other.x - x;
@@ -468,6 +360,27 @@ namespace Yellow.Core.Utils
         public float ManhattanDistance(Vec2 other)
         {
             return MathF.Abs(other.x - x) + MathF.Abs(other.y - y);
+        }
+
+        public void Rotate(float angle)
+        {
+            var sin = MathF.Sin(angle);
+            var cos = MathF.Cos(angle);
+
+            x *= cos - sin;
+            y *= sin + cos;
+        }
+
+        public Vec2 Rotated(float angle)
+        {
+            var clone = this;
+            var sin = MathF.Sin(angle);
+            var cos = MathF.Cos(angle);
+
+            clone.x *= cos - sin;
+            clone.y *= sin + cos;
+
+            return clone;
         }
 
         public void RotateAround(Vec2 center, float angle)
@@ -528,25 +441,65 @@ namespace Yellow.Core.Utils
             Multiply(MathF.Max(min, MathF.Min(max, currentLength)));
         }
 
-        public static Vec2 Longer(Vec2 a, Vec2 b)
+        public void Floor()
         {
-            if (b.LengthSquared > a.LengthSquared)
-            {
-                return b;
-            }
-
-            return a;
+            x = MathF.Floor(x);
+            y = MathF.Floor(y);
         }
 
-        public static Vec2 Shorter(Vec2 a, Vec2 b)
+        public void Ceiling()
         {
-            if (b.LengthSquared < a.LengthSquared)
+            x = MathF.Ceiling(x);
+            y = MathF.Ceiling(y);
+        }
+
+        public void Round()
+        {
+            x = MathF.Round(x);
+            y = MathF.Round(y);
+        }
+
+        public bool Equals(Vec2 other)
+        {
+            return x == other.x && y == other.y;
+        }
+
+        public bool Equals(Vec2 other, float eps)
+        {
+            return MathF.Abs(x - other.x) <= eps && Math.Abs(y - other.y) <= eps;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is Vec2))
             {
-                return b;
+                return false;
             }
 
-            return a;
+            Vec2 vec = (Vec2)obj;
+
+            return x == vec.x && y == vec.y;
         }
+
+        public override string ToString()
+        {
+            return x + " " + y;
+        }
+
+        public override int GetHashCode()
+        {
+            return (int)(x * y + x + y);
+        }
+
+        public static readonly Vec2 Zero = new Vec2(0, 0);
+
+        public static readonly Vec2 Up = new Vec2(0, -1);
+
+        public static readonly Vec2 Down = new Vec2(0, 1);
+
+        public static readonly Vec2 Left = new Vec2(-1, 0);
+
+        public static readonly Vec2 Right = new Vec2(1, 0);
 
         public static bool operator ==(Vec2 a, Vec2 b)
         {
@@ -583,6 +536,11 @@ namespace Yellow.Core.Utils
             return new Vec2(vec.x * scalar, vec.y * scalar);
         }
 
+        public static Vec2 operator *(Vec2 a, Vec2 b)
+        {
+            return new Vec2(a.x * b.x, a.y * b.y);
+        }
+
         public static Vec2 operator /(Vec2 vec, float scalar)
         {
             var invertedScalar = 1.0f / scalar;
@@ -590,9 +548,24 @@ namespace Yellow.Core.Utils
             return new Vec2(vec.x * invertedScalar, vec.y * invertedScalar);
         }
 
-        public static Vec2 operator *(Vec2 a, Vec2 b)
+        public static Vec2 Longer(Vec2 a, Vec2 b)
         {
-            return new Vec2(a.x * b.x, a.y * b.y);
+            if (b.LengthSquared > a.LengthSquared)
+            {
+                return b;
+            }
+
+            return a;
+        }
+
+        public static Vec2 Shorter(Vec2 a, Vec2 b)
+        {
+            if (b.LengthSquared < a.LengthSquared)
+            {
+                return b;
+            }
+
+            return a;
         }
 
         public static Vec2 Lerp(Vec2 a, Vec2 b, float time)
@@ -600,6 +573,31 @@ namespace Yellow.Core.Utils
             a.Lerp(b, time);
 
             return a;
+        }
+
+        public static Vec2 FromRadians(float angle, float length)
+        {
+            var sin = MathF.Sin(angle);
+            var cos = MathF.Cos(angle);
+
+            return new Vec2(cos * length, sin * length);
+        }
+
+        public static Vec2 FromDegrees(float angle, float length)
+        {
+            angle *= Math2.Deg2Rad;
+
+            var sin = MathF.Sin(angle);
+            var cos = MathF.Cos(angle);
+
+            return new Vec2(cos * length, sin * length);
+        }
+
+        public static float AngleBetween(Vec2 a, Vec2 b)
+        {
+            var dot = a.x * b.x + a.y * b.y;
+
+            return MathF.Acos(dot / (a.Length * b.Length));
         }
     }
 }

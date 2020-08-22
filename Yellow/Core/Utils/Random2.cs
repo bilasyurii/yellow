@@ -36,7 +36,7 @@ namespace Yellow.Core.Utils
 
         public Vec2 Vector(float length)
         {
-            return new Vec2((float)Sample() * 2.0f - 1.0f, (float)Sample() * 2.0f - 1.0f).Multiply(length);
+            return new Vec2(((float)Sample() * 2.0f - 1.0f) * length, ((float)Sample() * 2.0f - 1.0f) * length);
         }
 
         public T Get<T>(IList<T> collection)
