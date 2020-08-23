@@ -209,7 +209,12 @@ namespace Yellow.Core.Utils
 
         public float AngleTo(Vec2 other)
         {
-            return MathF.Atan2(x * other.y - y * other.x, x * other.x + y * other.y);
+            return MathF.Atan2(y * other.x - x * other.y, x * other.x + y * other.y);
+        }
+
+        public float AngleToDeg(Vec2 other)
+        {
+            return MathF.Atan2(y * other.x - x * other.y, x * other.x + y * other.y) * Math2.Rad2Deg;
         }
 
         public float Dot(Vec2 other)
@@ -265,12 +270,6 @@ namespace Yellow.Core.Utils
         {
             this.x *= x;
             this.y *= y;
-        }
-
-        public void MultiplyVectors(Vec2 a, Vec2 b)
-        {
-            x *= a.x * b.x;
-            y *= a.y * b.y;
         }
 
         public void Divide(float scalar)
@@ -366,9 +365,10 @@ namespace Yellow.Core.Utils
         {
             var sin = MathF.Sin(angle);
             var cos = MathF.Cos(angle);
+            var prevX = x;
 
-            x *= cos - sin;
-            y *= sin + cos;
+            x = x * cos + y * sin;
+            y = y * cos - prevX * sin;
         }
 
         public Vec2 Rotated(float angle)
@@ -377,8 +377,8 @@ namespace Yellow.Core.Utils
             var sin = MathF.Sin(angle);
             var cos = MathF.Cos(angle);
 
-            clone.x *= cos - sin;
-            clone.y *= sin + cos;
+            clone.x = x * cos + y * sin;
+            clone.y = y * cos - x * sin;
 
             return clone;
         }
@@ -391,8 +391,8 @@ namespace Yellow.Core.Utils
             var dirX = x - center.x;
             var dirY = y - center.y;
 
-            x = dirX * cos - dirY * sin + center.x;
-            y = dirX * sin + dirY * cos + center.y;
+            x = dirX * cos + dirY * sin + center.x;
+            y = dirY * cos - dirX * sin + center.y;
         }
 
         public Vec2 RotateAroundThis(Vec2 point, float angle)
@@ -403,8 +403,8 @@ namespace Yellow.Core.Utils
             var dirX = point.x - x;
             var dirY = point.y - y;
 
-            point.x = dirX * cos - dirY * sin + x;
-            point.y = dirX * sin + dirY * cos + y;
+            point.x = dirX * cos + dirY * sin + x;
+            point.y = dirY * cos - dirX * sin + y;
 
             return point;
         }
