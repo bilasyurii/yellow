@@ -7,39 +7,118 @@ namespace Yellow.Core.Components
 {
     public class TransformComponent : IComponent
     {
-        private Transform cachedTransform;
+        private float rotation;
 
-        private bool updateNeeded = true;
+        private Vec2 position = new Vec2(0, 0);
 
-        private float mRotation;
+        private Vec2 scale = new Vec2(1, 1);
 
-#pragma warning disable IDE1006
+        private Vec2 pivot = new Vec2(0, 0);
 
-        public Vec2 position { get; private set; } = new Vec2(0, 0);
+        private bool worldDirty = true;
 
-        public Vec2 scale { get; private set; } = new Vec2(1, 1);
+        private TransformComponent parent;
 
-        public Vec2 pivot { get; private set; } = new Vec2(0, 0);
+        private Transform localTransform;
+
+        private Transform worldTransform;
+
+        public Transform LocalTransform => localTransform;
+
+        public Transform WorldTransform => worldTransform;
+
+        public TransformComponent Parent
+        {
+            get
+            {
+                return parent;
+            }
+
+            set
+            {
+                parent = value;
+                worldDirty = true;
+            }
+        }
+
+        public bool Dirty { get; private set; } = true;
+
+        public bool WorldDirty
+        {
+            get
+            {
+                return worldDirty || Dirty || (Parent != null && Parent.WorldDirty);
+            }
+        }
+
+        public TransformComponent(TransformComponent parent)
+        {
+            this.parent = parent;
+        }
+
+        public Vec2 Position
+        {
+            get
+            {
+                return position;
+            }
+
+            set
+            {
+                position = value;
+                Dirty = true;
+            }
+        }
+
+        public Vec2 Scale
+        {
+            get
+            {
+                return scale;
+            }
+
+            set
+            {
+                scale = value;
+                Dirty = true;
+            }
+        }
+
+        public Vec2 Pivot
+        {
+            get
+            {
+                return pivot;
+            }
+
+            set
+            {
+                pivot = value;
+                Dirty = true;
+            }
+        }
 
         public float Rotation
         {
             get
             {
-                return mRotation;
+                return rotation;
             }
 
             set
             {
-                mRotation = value % Math2.PI2;
+                rotation = value % Math2.PI2;
 
-                if (mRotation < 0.0f)
+                if (rotation < 0.0f)
                 {
-                    mRotation += Math2.PI2;
+                    rotation += Math2.PI2;
                 }
 
-                updateNeeded = true;
+                Dirty = true;
             }
         }
+
+#pragma warning disable IDE1006
 
         public float x
         {
@@ -51,7 +130,7 @@ namespace Yellow.Core.Components
             set
             {
                 position.SetX(value);
-                updateNeeded = true;
+                Dirty = true;
             }
         }
 
@@ -65,7 +144,7 @@ namespace Yellow.Core.Components
             set
             {
                 position.SetY(value);
-                updateNeeded = true;
+                Dirty = true;
             }
         }
 
@@ -79,7 +158,7 @@ namespace Yellow.Core.Components
             set
             {
                 scale.SetX(x);
-                updateNeeded = true;
+                Dirty = true;
             }
         }
 
@@ -93,7 +172,7 @@ namespace Yellow.Core.Components
             set
             {
                 scale.SetY(value);
-                updateNeeded = true;
+                Dirty = true;
             }
         }
 
@@ -107,7 +186,7 @@ namespace Yellow.Core.Components
             set
             {
                 pivot.SetX(value);
-                updateNeeded = true;
+                Dirty = true;
             }
         }
 
@@ -121,16 +200,16 @@ namespace Yellow.Core.Components
             set
             {
                 pivot.SetY(value);
-                updateNeeded = true;
+                Dirty = true;
             }
         }
 
-        #pragma warning restore IDE1006
+#pragma warning restore IDE1006
 
         public TransformComponent Translate(float x, float y)
         {
             position.Add(x, y);
-            updateNeeded = true;
+            Dirty = true;
 
             return this;
         }
@@ -138,46 +217,62 @@ namespace Yellow.Core.Components
         public TransformComponent Translate(Vec2 movement)
         {
             position.Add(movement);
-            updateNeeded = true;
+            Dirty = true;
 
             return this;
         }
 
-        public TransformComponent Rotate(float rotation)
+        public TransformComponent Rotate(float angle)
         {
-            Rotation = mRotation + rotation;
+            Rotation = rotation + angle;
 
             return this;
         }
 
-        public TransformComponent Scale(float x, float y)
+        public TransformComponent ScaleTransform(float x, float y)
         {
             scale.Multiply(x, y);
-            updateNeeded = true;
+            Dirty = true;
 
             return this;
         }
 
-        public TransformComponent Scale(Vec2 scale)
+        public TransformComponent ScaleTransform(float amount)
+        {
+            scale.Multiply(amount, amount);
+            Dirty = true;
+
+            return this;
+        }
+
+        public TransformComponent ScaleTransform(Vec2 scale)
         {
             this.scale.Multiply(scale);
-            updateNeeded = true;
+            Dirty = true;
 
             return this;
         }
 
-        public TransformComponent() {}
+        public TransformComponent SetPosition(float x, float y)
+        {
+            position.Set(x, y);
+            Dirty = true;
 
-        public TransformComponent(TransformComponent other)
-        {
-            // TODO copy scale, position, rotation, origin
-            // and if other doens't need update - copy matrix, too
+            return this;
         }
-        
-        private void UpdateTransform()
+
+        public TransformComponent SetPivot(float x, float y)
         {
-            float sin = MathF.Sin(-mRotation);
-            float cos = MathF.Cos(mRotation);
+            pivot.Set(x, y);
+            Dirty = true;
+
+            return this;
+        }
+
+        public void UpdateLocalTransform()
+        {
+            float sin = MathF.Sin(-rotation);
+            float cos = MathF.Cos(rotation);
 
             float a = scale.x * cos;
             float b = scale.x * sin;
@@ -187,23 +282,26 @@ namespace Yellow.Core.Components
             float tx = -pivot.x * a - pivot.y * c + position.x;
             float ty = pivot.x * b - pivot.y * d + position.y;
 
-            cachedTransform = new Transform(
+            localTransform = new Transform(
                 a, c, tx,
                 -b, d, ty,
                 0.0f, 0.0f, 1.0f
             );
 
-            updateNeeded = false;
+            Dirty = false;
         }
-
-        public static explicit operator Transform(TransformComponent component)
+        
+        public void UpdateTransform()
         {
-            if (component.updateNeeded)
+            if (Dirty)
             {
-                component.UpdateTransform();
+                UpdateLocalTransform();
             }
 
-            return component.cachedTransform;
+            worldTransform = parent.worldTransform;
+            worldTransform.Combine(localTransform);
+
+            worldDirty = false;
         }
     }
 }
