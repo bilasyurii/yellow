@@ -1,5 +1,7 @@
 ﻿using SFML.Graphics;
 using SFML.Window;
+using System.IO;
+using Yellow.Assets.JSON;
 
 namespace Yellow
 {
@@ -14,10 +16,27 @@ namespace Yellow
 
             var clearColor = new Color(50, 50, 50);
 
-            CircleShape cs = new CircleShape(100.0f)
+            var cs = new CircleShape(100.0f)
             {
                 FillColor = Color.Yellow
             };
+
+            var game = new Game();
+
+            game.Assets.LoadTexture("robot", @"img\sprite.png");
+
+            var stream = new FileStream(@"..\..\assets\atlas\atlas01.json", FileMode.Open);
+
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                var atlasData = reader.ReadToEnd();
+                var parser = new Parser();
+                parser.Parse(atlasData);
+            }
+
+            //var sprite = new Sprite(game.Assets.GetTexture("robot"));
+
+            var sprite = game.MakeSprite("robot");
 
             while (window.IsOpen)
             {
@@ -25,6 +44,8 @@ namespace Yellow
 
                 window.Clear(clearColor);
                 window.Draw(cs);
+
+                window.Draw(sprite);
 
                 window.Display();
             }
