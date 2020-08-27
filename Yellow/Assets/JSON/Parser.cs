@@ -1,22 +1,39 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
+using System;
 
 namespace Yellow.Assets.JSON
 {
     public class Parser : IParser
     {
-        private List<Token> tokens = new List<Token>();
+        private readonly List<Node> nodes = new List<Node>();
 
+        readonly Stack<bool> braces = new Stack<bool>();
+
+        private Node root;
+
+        private int currentNode;
+
+        private int nodesCount;
+
+        private int listBraceCount;
+
+        private int dictionaryBraceCount;
+        
         public void Parse(string data)
         {
-            tokens.Clear();
+            nodes.Clear();
+            braces.Clear();
 
             SplitToTokens(data);
 
-            foreach (var token in tokens)
-            {
-                System.Console.WriteLine(System.Enum.GetName(typeof(Token.TokenType), token.type) + " " + token.data);
-            }
+            listBraceCount = 0;
+            dictionaryBraceCount = 0;
+            currentNode = 0;
+            nodesCount = nodes.Count;
+
+            root = ParseNode();
         }
 
         private void SplitToTokens(string str)
@@ -57,7 +74,7 @@ namespace Yellow.Assets.JSON
 
                             if (containsDot)
                             {
-                                Unexpected("float can't have more than one dot symbol.");
+                                UnexpectedSymbol("float can't have more than one dot symbol.");
                             }
                             else
                             {
@@ -70,7 +87,7 @@ namespace Yellow.Assets.JSON
 
                             if (index == 1 && symbol == '0' && token[0] == '0')
                             {
-                                Unexpected("octal numbers are unsupported.");
+                                UnexpectedSymbol("octal numbers are unsupported.");
                             }
                         }
                         else if (IsWhitespace(symbol) || IsScope(symbol) || symbol == ',')
@@ -78,20 +95,32 @@ namespace Yellow.Assets.JSON
                             // last symbol
                             if (token[^1] == '.')
                             {
-                                Unexpected("float can't have a dot in the end.");
+                                UnexpectedSymbol("float can't have a dot in the end.");
                             }
 
-                            tokens.Add(new Token()
+                            if (containsDot)
                             {
-                                data = token.ToString(),
-                                type = containsDot ? Token.TokenType.Float : Token.TokenType.Integer
-                            });
+                                nodes.Add(new Node()
+                                {
+                                    data = float.Parse(token.ToString(), CultureInfo.InvariantCulture),
+                                    type = Node.NodeType.Float
+                                });
+                            }
+                            else
+                            {
+
+                                nodes.Add(new Node()
+                                {
+                                    data = int.Parse(token.ToString(), CultureInfo.InvariantCulture),
+                                    type = Node.NodeType.Integer
+                                });
+                            }
 
                             break;
                         }
                         else
                         {
-                            Unexpected(symbol.ToString());
+                            UnexpectedSymbol(symbol.ToString());
                         }
 
                         ++index;
@@ -99,20 +128,20 @@ namespace Yellow.Assets.JSON
                 }
                 else if (IsScope(symbol))
                 {
-                    tokens.Add(new Token()
+                    nodes.Add(new Node()
                     {
-                        data = token.ToString(),
-                        type = Token.TokenType.Scope
+                        data = symbol,
+                        type = Node.NodeType.Scope
                     });
 
                     ++index;
                 }
                 else if (symbol == ':')
                 {
-                    tokens.Add(new Token()
+                    nodes.Add(new Node()
                     {
                         data = null,
-                        type = Token.TokenType.Colon
+                        type = Node.NodeType.Colon
                     });
 
                     ++index;
@@ -130,10 +159,10 @@ namespace Yellow.Assets.JSON
 
                         if (symbol == '\"')
                         {
-                            tokens.Add(new Token()
+                            nodes.Add(new Node()
                             {
                                 data = token.ToString(),
-                                type = Token.TokenType.String
+                                type = Node.NodeType.String
                             });
 
                             break;
@@ -193,25 +222,23 @@ namespace Yellow.Assets.JSON
                             {
                                 case "true":
                                 case "false":
-                                    tokens.Add(new Token()
+                                    nodes.Add(new Node()
                                     {
-                                        data = temp,
-                                        type = Token.TokenType.Boolean
+                                        data = (temp == "true"),
+                                        type = Node.NodeType.Boolean
                                     });
-
                                     break;
 
                                 case "null":
-                                    tokens.Add(new Token()
+                                    nodes.Add(new Node()
                                     {
                                         data = null,
-                                        type = Token.TokenType.Null
+                                        type = Node.NodeType.Null
                                     });
-
                                     break;
-                                default:
-                                    Unexpected("identifiers aren't allowed.");
 
+                                default:
+                                    UnexpectedSymbol("identifiers aren't allowed.");
                                     break;
                             }
 
@@ -228,9 +255,199 @@ namespace Yellow.Assets.JSON
             }
         }
 
-        private static void Unexpected(string data)
+        private Node ParseNode()
+        {
+            Node node;
+
+            while (currentNode < nodesCount)
+            {
+                node = nodes[currentNode];
+
+                switch (node.type)
+                {
+                    case Node.NodeType.Scope:
+                        {
+                            char bracket = node.Char;
+
+                            switch (bracket)
+                            {
+                                case '{':
+                                    return ParseDictionary();
+
+                                case '[':
+                                    return ParseList();
+
+                                case '}':
+                                    CloseDictionary();
+                                    break;
+
+                                case ']':
+                                    CloseList();
+                                    break;
+                            }
+                        }
+                        break;
+
+                    case Node.NodeType.String:
+                    case Node.NodeType.Boolean:
+                    case Node.NodeType.Float:
+                    case Node.NodeType.Integer:
+                    case Node.NodeType.Null:
+                        ++currentNode;
+
+                        return node;
+
+                    default:
+                        UnexpectedToken(GetNodeTypeName(node.type) + ".");
+                        break;
+                }
+            }
+
+            return null;
+        }
+
+        private Node ParseDictionary()
+        {
+            ++dictionaryBraceCount;
+            braces.Push(true);
+            ++currentNode;
+
+            var dictionary = new Dictionary<string, Node>();
+
+            while (currentNode < nodesCount)
+            {
+                if (IsClosingDictionary())
+                {
+                    CloseDictionary();
+
+                    break;
+                }
+
+                dictionary.Add(ParseKey(), ParseNode());
+            }
+
+            return new Node()
+            {
+                type = Node.NodeType.Dictionary,
+                data = dictionary
+            };
+        }
+
+        private Node ParseList()
+        {
+            ++listBraceCount;
+            braces.Push(false);
+            ++currentNode;
+
+            var list = new List<Node>();
+
+            while (currentNode < nodesCount)
+            {
+                if (IsClosingList())
+                {
+                    CloseList();
+
+                    break;
+                }
+
+                list.Add(ParseNode());
+            }
+
+            return new Node()
+            {
+                type = Node.NodeType.List,
+                data = list
+            };
+        }
+
+        private bool IsClosingDictionary()
+        {
+            var node = nodes[currentNode];
+
+            return node.type == Node.NodeType.Scope && node.Char == '}';
+        }
+
+        private bool IsClosingList()
+        {
+            var node = nodes[currentNode];
+
+            return node.type == Node.NodeType.Scope && node.Char == ']';
+        }
+
+        private void CloseDictionary()
+        {
+
+            if (--dictionaryBraceCount < 0)
+            {
+                UnexpectedToken("redundant closing dictionary bracket '}'.");
+            }
+
+            // if last opened bracket was for a list
+            if (braces.Pop() == false)
+            {
+                UnexpectedToken("closing dictionary bracket '}' at the beginning of file or after opening list bracket '['.");
+            }
+
+            ++currentNode;
+        }
+
+        private void CloseList()
+        {
+
+            if (--listBraceCount < 0)
+            {
+                UnexpectedToken("redundant closing list bracket ']'.");
+            }
+
+            // if last opened bracket was for a dictionary
+            if (braces.Pop() == true)
+            {
+                UnexpectedToken("closing list bracket ']' at the beginning of file or after opening dictionary bracket '{'.");
+            }
+
+            ++currentNode;
+        }
+
+        private string ParseKey()
+        {
+            var node = nodes[currentNode];
+
+            if (node.type == Node.NodeType.String)
+            {
+                var key = node.String;
+
+                ++currentNode;
+
+                node = nodes[currentNode++];
+
+                if (node.type != Node.NodeType.Colon)
+                {
+                    UnexpectedToken($"expected colon after a key, but got {GetNodeTypeName(node.type)}");
+                }
+
+                return key;
+            }
+            else
+            {
+                UnexpectedToken($"expected key as a string, but got {GetNodeTypeName(node.type)}");
+            }
+
+            return null;
+        }
+
+        private static string GetNodeTypeName(Node.NodeType type)
+        {
+            return Enum.GetName(typeof (Node.NodeType), type);
+        }
+
+        private static void UnexpectedSymbol(string data)
         {
             throw new JSONException(JSONException.ExceptionReason.UnexpectedSymbol, data);
+        }
+
+        private static void UnexpectedToken(string data)
+        {
+            throw new JSONException(JSONException.ExceptionReason.UnexpectedToken, data);
         }
 
         public static bool IsDigit(char symbol)

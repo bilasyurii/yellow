@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Yellow.Assets.JSON
 {
@@ -8,7 +6,8 @@ namespace Yellow.Assets.JSON
     {
         public enum ExceptionReason
         {
-            UnexpectedSymbol
+            UnexpectedSymbol,
+            UnexpectedToken,
         };
 
         public ExceptionReason Reason { get; private set; }
