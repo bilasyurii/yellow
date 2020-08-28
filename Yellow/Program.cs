@@ -31,7 +31,8 @@ namespace Yellow
             {
                 var atlasData = reader.ReadToEnd();
                 var parser = new JParser();
-                parser.Parse(atlasData);
+                var json = parser.Parse(atlasData);
+                System.Console.WriteLine(json["frames"]["tile"]["frame"]["w"].Integer);
             }
 
             //var sprite = new Sprite(game.Assets.GetTexture("robot"));

@@ -21,6 +21,22 @@ namespace Yellow.Assets.JSON
 
         public object data;
 
+        public JNode this[string key]
+        {
+            get
+            {
+                return ((Dictionary<string, JNode>)data)[key];
+            }
+        }
+
+        public JNode this[int index]
+        {
+            get
+            {
+                return ((List<JNode>)data)[index];
+            }
+        }
+
         public string String
         {
             get
