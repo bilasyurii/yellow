@@ -2,7 +2,7 @@
 
 namespace Yellow.Assets.JSON
 {
-    public class Node
+    public class JNode
     {
         public enum NodeType
         {
@@ -61,19 +61,19 @@ namespace Yellow.Assets.JSON
             }
         }
 
-        public Dictionary<string, Node> Dictionary
+        public Dictionary<string, JNode> Dictionary
         {
             get
             {
-                return (Dictionary<string, Node>)data;
+                return (Dictionary<string, JNode>)data;
             }
         }
 
-        public List<Node> List
+        public List<JNode> List
         {
             get
             {
-                return (List<Node>)data;
+                return (List<JNode>)data;
             }
         }
     }

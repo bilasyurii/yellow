@@ -5,13 +5,11 @@ using System;
 
 namespace Yellow.Assets.JSON
 {
-    public class Parser : IParser
+    public class JParser : IJParser
     {
-        private readonly List<Node> nodes = new List<Node>();
+        private readonly List<JNode> nodes = new List<JNode>();
 
         readonly Stack<bool> braces = new Stack<bool>();
-
-        private Node root;
 
         private int currentNode;
 
@@ -20,8 +18,10 @@ namespace Yellow.Assets.JSON
         private int listBraceCount;
 
         private int dictionaryBraceCount;
-        
-        public void Parse(string data)
+
+        public JNode Result { get; private set; } = null;
+
+        public JNode Parse(string data)
         {
             nodes.Clear();
             braces.Clear();
@@ -33,7 +33,7 @@ namespace Yellow.Assets.JSON
             currentNode = 0;
             nodesCount = nodes.Count;
 
-            root = ParseNode();
+            return Result = ParseNode();
         }
 
         private void SplitToTokens(string str)
@@ -100,19 +100,19 @@ namespace Yellow.Assets.JSON
 
                             if (containsDot)
                             {
-                                nodes.Add(new Node()
+                                nodes.Add(new JNode()
                                 {
                                     data = float.Parse(token.ToString(), CultureInfo.InvariantCulture),
-                                    type = Node.NodeType.Float
+                                    type = JNode.NodeType.Float
                                 });
                             }
                             else
                             {
 
-                                nodes.Add(new Node()
+                                nodes.Add(new JNode()
                                 {
                                     data = int.Parse(token.ToString(), CultureInfo.InvariantCulture),
-                                    type = Node.NodeType.Integer
+                                    type = JNode.NodeType.Integer
                                 });
                             }
 
@@ -128,20 +128,20 @@ namespace Yellow.Assets.JSON
                 }
                 else if (IsScope(symbol))
                 {
-                    nodes.Add(new Node()
+                    nodes.Add(new JNode()
                     {
                         data = symbol,
-                        type = Node.NodeType.Scope
+                        type = JNode.NodeType.Scope
                     });
 
                     ++index;
                 }
                 else if (symbol == ':')
                 {
-                    nodes.Add(new Node()
+                    nodes.Add(new JNode()
                     {
                         data = null,
-                        type = Node.NodeType.Colon
+                        type = JNode.NodeType.Colon
                     });
 
                     ++index;
@@ -159,10 +159,10 @@ namespace Yellow.Assets.JSON
 
                         if (symbol == '\"')
                         {
-                            nodes.Add(new Node()
+                            nodes.Add(new JNode()
                             {
                                 data = token.ToString(),
-                                type = Node.NodeType.String
+                                type = JNode.NodeType.String
                             });
 
                             break;
@@ -222,18 +222,18 @@ namespace Yellow.Assets.JSON
                             {
                                 case "true":
                                 case "false":
-                                    nodes.Add(new Node()
+                                    nodes.Add(new JNode()
                                     {
                                         data = (temp == "true"),
-                                        type = Node.NodeType.Boolean
+                                        type = JNode.NodeType.Boolean
                                     });
                                     break;
 
                                 case "null":
-                                    nodes.Add(new Node()
+                                    nodes.Add(new JNode()
                                     {
                                         data = null,
-                                        type = Node.NodeType.Null
+                                        type = JNode.NodeType.Null
                                     });
                                     break;
 
@@ -255,9 +255,9 @@ namespace Yellow.Assets.JSON
             }
         }
 
-        private Node ParseNode()
+        private JNode ParseNode()
         {
-            Node node;
+            JNode node;
 
             while (currentNode < nodesCount)
             {
@@ -265,7 +265,7 @@ namespace Yellow.Assets.JSON
 
                 switch (node.type)
                 {
-                    case Node.NodeType.Scope:
+                    case JNode.NodeType.Scope:
                         {
                             char bracket = node.Char;
 
@@ -288,11 +288,11 @@ namespace Yellow.Assets.JSON
                         }
                         break;
 
-                    case Node.NodeType.String:
-                    case Node.NodeType.Boolean:
-                    case Node.NodeType.Float:
-                    case Node.NodeType.Integer:
-                    case Node.NodeType.Null:
+                    case JNode.NodeType.String:
+                    case JNode.NodeType.Boolean:
+                    case JNode.NodeType.Float:
+                    case JNode.NodeType.Integer:
+                    case JNode.NodeType.Null:
                         ++currentNode;
 
                         return node;
@@ -306,13 +306,13 @@ namespace Yellow.Assets.JSON
             return null;
         }
 
-        private Node ParseDictionary()
+        private JNode ParseDictionary()
         {
             ++dictionaryBraceCount;
             braces.Push(true);
             ++currentNode;
 
-            var dictionary = new Dictionary<string, Node>();
+            var dictionary = new Dictionary<string, JNode>();
 
             while (currentNode < nodesCount)
             {
@@ -326,20 +326,20 @@ namespace Yellow.Assets.JSON
                 dictionary.Add(ParseKey(), ParseNode());
             }
 
-            return new Node()
+            return new JNode()
             {
-                type = Node.NodeType.Dictionary,
+                type = JNode.NodeType.Dictionary,
                 data = dictionary
             };
         }
 
-        private Node ParseList()
+        private JNode ParseList()
         {
             ++listBraceCount;
             braces.Push(false);
             ++currentNode;
 
-            var list = new List<Node>();
+            var list = new List<JNode>();
 
             while (currentNode < nodesCount)
             {
@@ -353,9 +353,9 @@ namespace Yellow.Assets.JSON
                 list.Add(ParseNode());
             }
 
-            return new Node()
+            return new JNode()
             {
-                type = Node.NodeType.List,
+                type = JNode.NodeType.List,
                 data = list
             };
         }
@@ -364,14 +364,14 @@ namespace Yellow.Assets.JSON
         {
             var node = nodes[currentNode];
 
-            return node.type == Node.NodeType.Scope && node.Char == '}';
+            return node.type == JNode.NodeType.Scope && node.Char == '}';
         }
 
         private bool IsClosingList()
         {
             var node = nodes[currentNode];
 
-            return node.type == Node.NodeType.Scope && node.Char == ']';
+            return node.type == JNode.NodeType.Scope && node.Char == ']';
         }
 
         private void CloseDictionary()
@@ -412,7 +412,7 @@ namespace Yellow.Assets.JSON
         {
             var node = nodes[currentNode];
 
-            if (node.type == Node.NodeType.String)
+            if (node.type == JNode.NodeType.String)
             {
                 var key = node.String;
 
@@ -420,7 +420,7 @@ namespace Yellow.Assets.JSON
 
                 node = nodes[currentNode++];
 
-                if (node.type != Node.NodeType.Colon)
+                if (node.type != JNode.NodeType.Colon)
                 {
                     UnexpectedToken($"expected colon after a key, but got {GetNodeTypeName(node.type)}");
                 }
@@ -435,9 +435,9 @@ namespace Yellow.Assets.JSON
             return null;
         }
 
-        private static string GetNodeTypeName(Node.NodeType type)
+        private static string GetNodeTypeName(JNode.NodeType type)
         {
-            return Enum.GetName(typeof (Node.NodeType), type);
+            return Enum.GetName(typeof (JNode.NodeType), type);
         }
 
         private static void UnexpectedSymbol(string data)

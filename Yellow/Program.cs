@@ -30,7 +30,7 @@ namespace Yellow
             using (StreamReader reader = new StreamReader(stream))
             {
                 var atlasData = reader.ReadToEnd();
-                var parser = new Parser();
+                var parser = new JParser();
                 parser.Parse(atlasData);
             }
 
