@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using Yellow.Assets.Abstractions;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System;
 
 namespace Yellow.Assets.JSON
 {
-    public class JParser : IJParser
+    public class JsonParser : IJsonParser
     {
         private readonly List<JNode> nodes = new List<JNode>();
 
@@ -442,12 +443,12 @@ namespace Yellow.Assets.JSON
 
         private static void UnexpectedSymbol(string data)
         {
-            throw new JSONException(JSONException.ExceptionReason.UnexpectedSymbol, data);
+            throw new JsonException(JsonException.ExceptionReason.UnexpectedSymbol, data);
         }
 
         private static void UnexpectedToken(string data)
         {
-            throw new JSONException(JSONException.ExceptionReason.UnexpectedToken, data);
+            throw new JsonException(JsonException.ExceptionReason.UnexpectedToken, data);
         }
 
         public static bool IsDigit(char symbol)

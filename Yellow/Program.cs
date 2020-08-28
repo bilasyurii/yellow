@@ -1,7 +1,10 @@
 ﻿using SFML.Graphics;
 using SFML.Window;
 using System.IO;
+using Yellow.Assets.Abstractions;
+using Yellow.Assets.Atlases;
 using Yellow.Assets.JSON;
+using Yellow.Core;
 
 namespace Yellow
 {
@@ -21,23 +24,18 @@ namespace Yellow
                 FillColor = Color.Yellow
             };
 
+            Locator.ProvideStandardServices();
+            Locator.Provide<IAtlasParser>(new AtlasParser());
+            Locator.Provide<IJsonParser>(new JsonParser());
+
             var game = new Game();
 
-            game.Assets.LoadTexture("robot", @"img\sprite.png");
-
-            var stream = new FileStream(@"..\..\assets\atlas\atlas01.json", FileMode.Open);
-
-            using (StreamReader reader = new StreamReader(stream))
-            {
-                var atlasData = reader.ReadToEnd();
-                var parser = new JParser();
-                var json = parser.Parse(atlasData);
-                System.Console.WriteLine(json["frames"]["tile"]["frame"]["w"].Integer);
-            }
+            game.Assets.LoadTexture("robot", @"img\spritelist.png");
+            game.Assets.LoadAtlas("robotAtlas", @"atlas\atlas01.json", game.Assets.GetTexture("robot"));
 
             //var sprite = new Sprite(game.Assets.GetTexture("robot"));
 
-            var sprite = game.MakeSprite("robot");
+            var sprite = game.MakeSprite("tile");
 
             while (window.IsOpen)
             {

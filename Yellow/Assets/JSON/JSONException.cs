@@ -2,7 +2,7 @@
 
 namespace Yellow.Assets.JSON
 {
-    public class JSONException : Exception
+    public class JsonException : Exception
     {
         public enum ExceptionReason
         {
@@ -12,7 +12,7 @@ namespace Yellow.Assets.JSON
 
         public ExceptionReason Reason { get; private set; }
         
-        public JSONException(ExceptionReason reason, string message) : base(message)
+        public JsonException(ExceptionReason reason, string message) : base(message)
         {
             Reason = reason;
         }

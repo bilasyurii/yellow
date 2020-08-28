@@ -1,5 +1,10 @@
-﻿using SFML.Graphics;
+﻿using Yellow.Assets.Abstractions;
+using Yellow.Assets.Atlases;
+using SFML.Graphics;
 using System.Collections.Generic;
+using Yellow.Core;
+using System.IO;
+using System;
 
 namespace Yellow.Assets
 {
@@ -8,6 +13,26 @@ namespace Yellow.Assets
         private readonly Dictionary<string, Texture> textures = new Dictionary<string, Texture>();
 
         private readonly Dictionary<string, Atlas> atlases = new Dictionary<string, Atlas>();
+
+        private IAtlasParser atlasParser = null;
+
+        private IJsonParser jsonParser = null;
+
+        private IAtlasParser AtlasParser
+        {
+            get
+            {
+                return atlasParser ??= Locator.Get<IAtlasParser>();
+            }
+        }
+
+        private IJsonParser JsonParser
+        {
+            get
+            {
+                return jsonParser ??= Locator.Get<IJsonParser>();
+            }
+        }
 
         public string root = @"..\..\assets\";
 
@@ -33,9 +58,16 @@ namespace Yellow.Assets
             atlases.Add(name, atlas);
         }
 
-        public void LoadAtlas(string name, string path)
+        public void LoadAtlas(string name, string path, Texture texture)
         {
-            // TODO
+            var data = ReadFullFile(path);
+            var json = JsonParser.Parse(data);
+            var atlas = AtlasParser.Parse(json);
+
+            atlas.name = name;
+            atlas.texture = texture;
+
+            atlases.Add(name, atlas);
         }
 
         public Atlas GetAtlas(string name)
@@ -45,8 +77,73 @@ namespace Yellow.Assets
 
         public Sprite MakeSprite(string name)
         {
-            // TODO
+            IntRect rect;
+            Atlas atlas;
+
+            foreach (var record in atlases)
+            {
+                atlas = record.Value;
+
+                if (atlas.regions.TryGetValue(name, out rect))
+                {
+                    return new Sprite(atlas.texture, rect);
+                }
+            }
+
+            Texture texture;
+
+            if (textures.TryGetValue(name, out texture))
+            {
+                return new Sprite(texture);
+            }
+
+            Console.WriteLine($"Couldn't find atlas region or texture with name {name}.");
+
+            // TODO return some default image
+
             return new Sprite();
+        }
+
+        public Sprite MakeSprite(string name, string atlasName)
+        {
+            var atlas = atlases[atlasName];
+            
+            return new Sprite(atlas.texture, atlas.regions[name]);
+        }
+
+        public string ReadFullFile(string path, string root = null)
+        {
+            if (root == null)
+            {
+                path = this.root + path;
+            }
+
+            FileStream stream = null;
+            StreamReader reader = null;
+            string data;
+
+            try
+            {
+                stream = new FileStream(path, FileMode.Open);
+                reader = new StreamReader(stream);
+                data = reader.ReadToEnd();
+            }
+            catch(Exception e)
+            {
+                if (stream != null)
+                {
+                    stream.Dispose();
+                }
+
+                if (reader != null)
+                {
+                    reader.Dispose();
+                }
+
+                throw e;
+            }
+
+            return data;
         }
     }
 }

@@ -1,6 +1,7 @@
-﻿using SFML.Graphics;
+﻿using Yellow.Assets.Atlases;
+using SFML.Graphics;
 
-namespace Yellow.Assets
+namespace Yellow.Assets.Abstractions
 {
     public interface IAssetManager
     {
@@ -12,10 +13,12 @@ namespace Yellow.Assets
 
         void AddAtlas(string name, Atlas atlas);
 
-        void LoadAtlas(string name, string path);
+        void LoadAtlas(string name, string path, Texture texture);
 
         Atlas GetAtlas(string name);
 
         Sprite MakeSprite(string name);
+
+        Sprite MakeSprite(string name, string atlasName);
     }
 }
