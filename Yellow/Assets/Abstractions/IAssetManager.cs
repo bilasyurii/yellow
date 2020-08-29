@@ -11,7 +11,7 @@ namespace Yellow.Assets.Abstractions
 
         Texture GetTexture(string name);
 
-        void AddAtlas(string name, Atlas atlas);
+        void AddAtlas(Atlas atlas);
 
         void LoadAtlas(string name, string path, Texture texture);
 

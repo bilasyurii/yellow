@@ -53,9 +53,9 @@ namespace Yellow.Assets
             return textures[name];
         }
 
-        public void AddAtlas(string name, Atlas atlas)
+        public void AddAtlas(Atlas atlas)
         {
-            atlases.Add(name, atlas);
+            atlases.Add(atlas.name, atlas);
         }
 
         public void LoadAtlas(string name, string path, Texture texture)
