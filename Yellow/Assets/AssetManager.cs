@@ -77,22 +77,19 @@ namespace Yellow.Assets
 
         public Sprite MakeSprite(string name)
         {
-            IntRect rect;
             Atlas atlas;
 
             foreach (var record in atlases)
             {
                 atlas = record.Value;
 
-                if (atlas.regions.TryGetValue(name, out rect))
+                if (atlas.regions.TryGetValue(name, out var rect))
                 {
                     return new Sprite(atlas.texture, rect);
                 }
             }
 
-            Texture texture;
-
-            if (textures.TryGetValue(name, out texture))
+            if (textures.TryGetValue(name, out var texture))
             {
                 return new Sprite(texture);
             }

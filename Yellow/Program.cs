@@ -42,8 +42,8 @@ namespace Yellow
                 window.DispatchEvents();
 
                 window.Clear(clearColor);
-                window.Draw(cs);
 
+                window.Draw(cs);
                 window.Draw(sprite);
 
                 window.Display();
