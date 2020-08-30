@@ -34,6 +34,8 @@ namespace Yellow
 
             var sprite = game.MakeSprite("tile");
 
+            var entity = game.MakeEntity();
+
             while (window.IsOpen)
             {
                 window.DispatchEvents();

@@ -51,6 +51,8 @@ namespace Yellow.Core.Components
             }
         }
 
+        public TransformComponent() {}
+
         public TransformComponent(TransformComponent parent)
         {
             this.parent = parent;

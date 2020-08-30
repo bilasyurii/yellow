@@ -12,7 +12,7 @@ namespace Yellow.Core.ECS
 
         private readonly Pool entities;
 
-        public World(int poolInitialSize = 100)
+        public World(int poolInitialSize)
         {
             entities = new Pool(poolInitialSize);
 
@@ -53,7 +53,7 @@ namespace Yellow.Core.ECS
             }
             else
             {
-                return (Entity) entities.Get();
+                return (Entity)entities.Get();
             }
         }
 

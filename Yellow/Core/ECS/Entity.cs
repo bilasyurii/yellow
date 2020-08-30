@@ -10,6 +10,43 @@ namespace Yellow.Core.ECS
 
         public World World { get; private set; }
 
+        private TransformComponent transform = null;
+
+        public TransformComponent Transform
+        {
+            get
+            {
+                return transform;
+            }
+
+            set
+            {
+                // removing transform
+                if (value == null)
+                {
+                    components.Remove(typeof(TransformComponent));
+                    World.RemoveComponent(transform);
+                    transform = null;
+                }
+                else
+                {
+                    // if there was a transform already - removing it first
+                    if (transform != null)
+                    {
+                        // removing from this.components not needed, as it will be simply overriden below
+                        World.RemoveComponent(transform);
+                        Transform = null;
+                    }
+
+                    transform = value;
+                    value.owner = this;
+
+                    components.Add(typeof(TransformComponent), value);
+                    World.RegisterComponent(value);
+                }
+            }
+        }
+
         public Entity(World world)
         {
             World = world;
