@@ -10,8 +10,6 @@ namespace Yellow.Core.ECS
 
         public World World { get; private set; }
 
-        public TransformComponent Transform { get; private set; } = null;
-
         public Entity(World world)
         {
             World = world;
@@ -31,6 +29,20 @@ namespace Yellow.Core.ECS
         public T Get<T>() where T : Component
         {
             return (T) components[typeof (T)];
+        }
+
+        public bool TryGet<T>(out T component) where T : Component
+        {
+            if (components.ContainsKey(typeof(T)))
+            {
+                component = (T)components[typeof(T)];
+
+                return true;
+            }
+
+            component = null;
+
+            return false;
         }
 
         public void Add<T>(T component) where T : Component
