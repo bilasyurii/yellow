@@ -4,6 +4,7 @@ using Yellow.Assets.Abstractions;
 using Yellow.Assets.Atlases;
 using Yellow.Assets.JSON;
 using Yellow.Core;
+using Yellow.Core.Components;
 
 namespace Yellow
 {
@@ -35,6 +36,9 @@ namespace Yellow
             var sprite = game.MakeSprite("tile");
 
             var entity = game.MakeEntity();
+            var transform = entity.Transform = new TransformComponent();
+            transform.Translate(100f, 100f);
+            transform.SetPivot(35f, 19f);
 
             while (window.IsOpen)
             {
@@ -43,7 +47,12 @@ namespace Yellow
                 window.Clear(clearColor);
 
                 window.Draw(cs);
-                window.Draw(sprite);
+                transform.Rotate(0.001f);
+                transform.SetScale(transform.scaleX + 0.001f);
+                transform.UpdateLocalTransform();
+                var states = RenderStates.Default;
+                states.Transform.Combine(transform.LocalTransform);
+                window.Draw(sprite, states);
 
                 window.Display();
             }

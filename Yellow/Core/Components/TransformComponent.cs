@@ -227,6 +227,7 @@ namespace Yellow.Core.Components
         public TransformComponent Rotate(float angle)
         {
             Rotation = rotation + angle;
+            // dirty is marked in Rotation's set
 
             return this;
         }
@@ -250,6 +251,14 @@ namespace Yellow.Core.Components
         public TransformComponent ScaleTransform(Vec2 scale)
         {
             this.scale.Multiply(scale);
+            Dirty = true;
+
+            return this;
+        }
+
+        public TransformComponent SetScale(float scale)
+        {
+            this.scale.Set(scale);
             Dirty = true;
 
             return this;
