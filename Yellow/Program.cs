@@ -1,6 +1,5 @@
 ﻿using SFML.Graphics;
 using SFML.Window;
-using System.IO;
 using Yellow.Assets.Abstractions;
 using Yellow.Assets.Atlases;
 using Yellow.Assets.JSON;
@@ -32,8 +31,6 @@ namespace Yellow
 
             game.Assets.LoadTexture("robot", @"img\spritelist.png");
             game.Assets.LoadAtlas("robotAtlas", @"atlas\atlas01.json", game.Assets.GetTexture("robot"));
-
-            //var sprite = new Sprite(game.Assets.GetTexture("robot"));
 
             var sprite = game.MakeSprite("tile");
 

@@ -5,7 +5,7 @@ using System;
 
 namespace Yellow.Core.Components
 {
-    public class TransformComponent : IComponent
+    public class TransformComponent : Component
     {
         private float rotation;
 

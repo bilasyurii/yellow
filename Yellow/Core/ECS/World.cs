@@ -8,7 +8,7 @@ namespace Yellow.Core.ECS
     {
         private readonly List<System> systems = new List<System>();
 
-        private readonly Dictionary<Type, List<Entity>> components = new Dictionary<Type, List<Entity>>();
+        private readonly Dictionary<Type, List<Component>> components = new Dictionary<Type, List<Component>>();
 
         private readonly Pool entities;
 
@@ -55,6 +55,32 @@ namespace Yellow.Core.ECS
             {
                 return (Entity) entities.Get();
             }
+        }
+
+        public void RegisterComponent<T>(T component) where T : Component
+        {
+            component.world = this;
+
+            var type = typeof(T);
+
+            if (components.TryGetValue(type, out var list))
+            {
+                list.Add(component);
+            }
+            else
+            {
+                components.Add(type, new List<Component>()
+                {
+                    component
+                });
+            }
+        }
+
+        public void RemoveComponent<T>(T component) where T : Component
+        {
+            component.world = null;
+
+            components[typeof(T)].Remove(component);
         }
     }
 }
