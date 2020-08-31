@@ -37,6 +37,8 @@ namespace Yellow
 
             var entity = game.MakeEntity();
             var transform = entity.Transform = new TransformComponent();
+            var graphic = new Graphic(sprite);
+            entity.Add(graphic);
             transform.Translate(100f, 100f);
             transform.SetPivot(35f, 19f);
 

@@ -2,6 +2,6 @@
 {
     public class System
     {
-        public void Update(float dt) { }
+        public virtual void Update(float dt) { }
     }
 }

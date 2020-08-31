@@ -1,6 +1,8 @@
-﻿using System;
+﻿using SFML.System;
+using System;
 using System.Collections.Generic;
 using Yellow.Core.Utils;
+using Yellow.Systems;
 
 namespace Yellow.Core.ECS
 {
@@ -11,6 +13,8 @@ namespace Yellow.Core.ECS
         private readonly Dictionary<Type, List<Component>> components = new Dictionary<Type, List<Component>>();
 
         private readonly Pool entities;
+
+        public RenderingSystem Renderer { get; private set; }
 
         public World(int poolInitialSize)
         {
@@ -29,12 +33,29 @@ namespace Yellow.Core.ECS
 
         public void AddSystem(System system)
         {
-            systems.Add(system);
+            if (system is RenderingSystem renderer)
+            {
+                Renderer = renderer;
+            }
+            else
+            {
+                systems.Add(system);
+            }
         }
 
         public void RemoveSystem(System system)
         {
-            systems.Remove(system);
+            if (!(system is RenderingSystem))
+            {
+                systems.Remove(system);
+            } else
+            {
+                Renderer = null;
+            }
+        }
+
+        public void Tick()
+        {
         }
 
         public void Update(float deltaTime)

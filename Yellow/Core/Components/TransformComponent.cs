@@ -17,7 +17,7 @@ namespace Yellow.Core.Components
 
         private bool worldDirty = true;
 
-        private TransformComponent parent = null;
+        private TransformComponent parent;
 
         private Transform localTransform;
 
