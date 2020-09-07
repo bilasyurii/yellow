@@ -29,6 +29,16 @@ namespace Yellow.Core.Utils
             return obj;
         }
 
+        public T Get<T>() where T : class
+        {
+            var index = objects.Count - 1;
+            var obj = objects[index];
+
+            objects.RemoveAt(index);
+
+            return (T)obj;
+        }
+
         public void Add(object obj)
         {
             objects.Add(obj);

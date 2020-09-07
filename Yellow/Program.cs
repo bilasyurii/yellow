@@ -42,8 +42,14 @@ namespace Yellow
             transform.Translate(100f, 100f);
             transform.SetPivot(35f, 19f);
 
+            game.Time.Events.Repeat(1000, 1, (args) => System.Console.WriteLine("Hello, Yellow!"));
+
+            game.Time.Events.Loop(500, (args) => System.Console.WriteLine("Hello!"));
+
             while (window.IsOpen)
             {
+                game.Update();
+
                 window.DispatchEvents();
 
                 window.Clear(clearColor);
