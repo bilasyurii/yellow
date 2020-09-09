@@ -2,21 +2,39 @@
 using SFML.Graphics;
 using Yellow.Core.ECS;
 using Yellow.Core.Time;
+using Yellow.Core.Rendering;
+using Yellow.Core.ScreenManagement;
+using Yellow.Core.Boot;
+using Yellow.Core.InputManagement;
+using System;
 
 namespace Yellow.Core
 {
     public class Game
     {
-        public World World { get; private set; }
+        private readonly Screen screen;
 
-        public IAssetManager Assets { get; private set; } = Locator.Get<IAssetManager>();
+        public bool IsRunning { get; private set; }
+
+        public IAssetManager Assets { get; } = Locator.Get<IAssetManager>();
 
         public TimeManager Time { get; private set; }
 
-        public Game(int entitiesPoolInitialSize = 100)
+        public World World { get; private set; }
+
+        public Renderer Renderer { get; private set; }
+
+        public Input Input { get; private set; }
+
+        public Game(WorldBuilder worldBuilder, Screen screen)
         {
+            this.screen = screen;
+            screen.WindowClosed += OnWindowClosed;
+
             Time = new TimeManager(this);
-            World = new World(entitiesPoolInitialSize);
+            World = new World(worldBuilder);
+            Renderer = new Renderer(screen);
+            Input = new Input(screen);
 
             Locator.Provide(this);
         }
@@ -36,9 +54,31 @@ namespace Yellow.Core
             return World.CreateEntity();
         }
 
-        public void Update()
+        public void Start()
         {
-            Time.Update();
+            if (!IsRunning)
+            {
+                IsRunning = true;
+
+                while (IsRunning)
+                {
+                    Time.Update();
+                    screen.Update();
+                    Input.Update();
+                    World.Update();
+                    Renderer.Render();
+                }
+            }
+        }
+
+        public void Stop()
+        {
+            IsRunning = false;
+        }
+
+        private void OnWindowClosed(object sender, EventArgs e)
+        {
+            IsRunning = false;
         }
     }
 }

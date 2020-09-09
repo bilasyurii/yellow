@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SFML.System;
+using System;
 
 namespace Yellow.Core.Utils
 {
@@ -12,6 +13,11 @@ namespace Yellow.Core.Utils
         {
             this.x = x;
             this.y = y;
+        }
+
+        public Vec2(float xy)
+        {
+            x = y = xy;
         }
 
         public Vec2(Vec2 other)
@@ -546,6 +552,21 @@ namespace Yellow.Core.Utils
             var invertedScalar = 1.0f / scalar;
 
             return new Vec2(vec.x * invertedScalar, vec.y * invertedScalar);
+        }
+
+        public static implicit operator Vector2u(Vec2 vec)
+        {
+            return new Vector2u((uint)vec.x, (uint)vec.y);
+        }
+
+        public static implicit operator Vector2f(Vec2 vec)
+        {
+            return new Vector2f(vec.x, vec.y);
+        }
+
+        public static implicit operator Vector2i(Vec2 vec)
+        {
+            return new Vector2i((int)vec.x, (int)vec.y);
         }
 
         public static Vec2 Longer(Vec2 a, Vec2 b)

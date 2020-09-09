@@ -34,7 +34,7 @@ namespace Yellow.Assets
             }
         }
 
-        public string root = @"..\..\assets\";
+        public string Root { get; set; } = @"..\..\assets\";
 
         public AssetManager() {}
 
@@ -45,7 +45,7 @@ namespace Yellow.Assets
 
         public void LoadTexture(string name, string path)
         {
-            textures.Add(name, new Texture(root + path));
+            textures.Add(name, new Texture(Root + path));
         }
 
         public Texture GetTexture(string name)
@@ -112,7 +112,7 @@ namespace Yellow.Assets
         {
             if (root == null)
             {
-                path = this.root + path;
+                path = Root + path;
             }
 
             FileStream stream = null;

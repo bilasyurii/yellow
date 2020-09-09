@@ -1,8 +1,7 @@
-﻿using SFML.System;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Yellow.Core.Boot;
 using Yellow.Core.Utils;
-using Yellow.Systems;
 
 namespace Yellow.Core.ECS
 {
@@ -14,10 +13,10 @@ namespace Yellow.Core.ECS
 
         private readonly Pool entities;
 
-        public RenderingSystem Renderer { get; private set; }
-
-        public World(int poolInitialSize)
+        public World(WorldBuilder worldBuilder)
         {
+            var poolInitialSize = worldBuilder.entitiesPoolSize;
+
             entities = new Pool(poolInitialSize);
 
             PrepopulatePool(poolInitialSize);
@@ -33,36 +32,23 @@ namespace Yellow.Core.ECS
 
         public void AddSystem(System system)
         {
-            if (system is RenderingSystem renderer)
-            {
-                Renderer = renderer;
-            }
-            else
-            {
-                systems.Add(system);
-            }
+             systems.Add(system);
         }
 
         public void RemoveSystem(System system)
         {
-            if (!(system is RenderingSystem))
-            {
-                systems.Remove(system);
-            } else
-            {
-                Renderer = null;
-            }
+            systems.Remove(system);
         }
 
         public void Tick()
         {
         }
 
-        public void Update(float deltaTime)
+        public void Update()
         {
             foreach (var system in systems)
             {
-                system.Update(deltaTime);
+                system.Update();
             }
         }
 

@@ -5,6 +5,8 @@ namespace Yellow.Assets.Abstractions
 {
     public interface IAssetManager
     {
+        string Root { get; set; }
+
         void AddTexture(string name, Texture texture);
 
         void LoadTexture(string name, string path);
