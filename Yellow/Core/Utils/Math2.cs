@@ -11,5 +11,15 @@ namespace Yellow.Core.Utils
         public static float Deg2Rad = MathF.PI / 180.0f;
 
         public static readonly Random2 Random;
+
+        public static int Sign(float x)
+        {
+            if (x > 0)
+            {
+                return 1;
+            }
+
+            return -1;
+        }
     }
 }

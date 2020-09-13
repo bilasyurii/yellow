@@ -61,12 +61,12 @@ namespace Yellow.Core
 
                 while (IsRunning)
                 {
-                    Time.Update();
-                    Input.Update();
+                    var dt = Time.Update();
+                    Input.Update(dt);
                     screen.Update();
                     World.Update();
                     Renderer.Render();
-                    Console.WriteLine(Input.AxisRaw("Horizontal"));
+                    Console.WriteLine(MathF.Round(Input.Axis("Horizontal"), 2));
                 }
             }
         }

@@ -42,7 +42,7 @@ namespace Yellow.Core.Time
             return timer;
         }
 
-        public void Update()
+        public float Update()
         {
             var newNow = clock.ElapsedTime.AsMilliseconds();
             DeltaTimeMS = newNow - Now;
@@ -55,6 +55,8 @@ namespace Yellow.Core.Time
             {
                 timer.Update(newNow);
             }
+
+            return DeltaTime;
         }
     }
 }

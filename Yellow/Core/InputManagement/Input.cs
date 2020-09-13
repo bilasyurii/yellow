@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Yellow.Core.Boot;
 using Yellow.Core.ScreenManagement;
+using Yellow.Core.Utils;
 using static SFML.Window.Keyboard;
 
 namespace Yellow.Core.InputManagement
@@ -47,9 +48,33 @@ namespace Yellow.Core.InputManagement
             }
         }
 
-        public void Update()
+        public void Update(float dt)
         {
             currentStates.CopyTo(previousStates, 0);
+
+            InputAxis axis;
+            float step, difference;
+
+            foreach (var axisItem in axises)
+            {
+                axis = axisItem.Value;
+
+                if (axis.changing)
+                {
+                    step = axis.sensitivity * dt;
+                    difference = axis.raw - axis.value;
+
+                    if (MathF.Abs(difference) > step)
+                    {
+                        axis.value += step * Math2.Sign(difference);
+                    }
+                    else
+                    {
+                        axis.value = axis.raw;
+                        axis.changing = false;
+                    }
+                }
+            }
         }
 
         public float Axis(string name)
@@ -135,6 +160,23 @@ namespace Yellow.Core.InputManagement
             axisKeys[(int)positive] = axis;
         }
 
+        public void RemoveInputAxis(string name)
+        {
+            if (axises.TryGetValue(name, out InputAxis axis))
+            {
+                axisKeys[(int)axis.negative] = null;
+                axisKeys[(int)axis.positive] = null;
+
+                if (axis.alternativeNegative != Key.Unknown)
+                {
+                    axisKeys[(int)axis.alternativeNegative] = null;
+                    axisKeys[(int)axis.alternativePositive] = null;
+                }
+
+                axises.Remove(name);
+            }
+        }
+
         public InputAxis GetInputAxis(string name)
         {
             return axises[name];
@@ -209,6 +251,8 @@ namespace Yellow.Core.InputManagement
 
                 if (axis != null)
                 {
+                    axis.changing = true;
+
                     if (axis.negative == e.Code || axis.alternativeNegative == e.Code)
                     {
                         axis.raw = -1;
@@ -260,6 +304,8 @@ namespace Yellow.Core.InputManagement
 
             if (axis != null)
             {
+                axis.changing = true;
+
                 if (axis.state == InputAxis.State.Both)
                 {
                     if (axis.negative == e.Code || axis.alternativeNegative == e.Code)

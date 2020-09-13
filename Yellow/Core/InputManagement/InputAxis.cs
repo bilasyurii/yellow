@@ -14,9 +14,13 @@ namespace Yellow.Core.InputManagement
 
         public State state = State.None;
 
-        public float value;
+        public bool changing = false;
 
         public int raw;
+
+        public float value;
+
+        public float sensitivity = 3f;
 
         public Key negative;
 
