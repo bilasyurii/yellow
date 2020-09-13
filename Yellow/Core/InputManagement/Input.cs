@@ -40,10 +40,7 @@ namespace Yellow.Core.InputManagement
 
         public void Update()
         {
-            var temp = previousStates;
-            previousStates = currentStates;
-            currentStates = temp;
-            Array.Fill(currentStates, false);
+            currentStates.CopyTo(previousStates, 0);
         }
 
         public float Axis(string name)
@@ -54,6 +51,22 @@ namespace Yellow.Core.InputManagement
         public float AxisRaw(string name)
         {
             return axises[name].raw;
+        }
+
+        public void AddAxis(string name, Key negative, Key positive)
+        {
+            axises.Add(name, new InputAxis()
+            {
+                negative = negative,
+                positive = positive
+            });
+
+            // TODO add input handlers?
+        }
+
+        public InputAxis GetInputAxis(string name)
+        {
+            return axises[name];
         }
 
         public bool IsKeyPressed(Key key)
@@ -90,23 +103,12 @@ namespace Yellow.Core.InputManagement
             return !currentStates[keyNumber] && previousStates[keyNumber];
         }
 
-        public void AddAxis(string name, Key negative, Key positive)
-        {
-            axises.Add(name, new InputAxis()
-            {
-                negative = negative,
-                positive = positive
-            });
-
-            // TODO add input handlers?
-        }
-
         private void InitEventHandlers()
         {
             var window = screen.Window;
 
-            window.KeyPressed += OnKeyPressed;
-            window.KeyReleased += OnKeyReleased;
+            window.KeyPressed += OnKeyDown;
+            window.KeyReleased += OnKeyUp;
         }
 
         private void GenerateKeyNames()
@@ -119,7 +121,7 @@ namespace Yellow.Core.InputManagement
             }
         }
 
-        private void OnKeyPressed(object sender, KeyEventArgs e)
+        private void OnKeyDown(object sender, KeyEventArgs e)
         {
             var keyNumber = (int)e.Code;
 
@@ -127,11 +129,11 @@ namespace Yellow.Core.InputManagement
 
             if (!previousStates[keyNumber])
             {
-                OnKeyPressed(sender, e);
+                KeyDown?.Invoke(sender, e);
             }
         }
 
-        private void OnKeyReleased(object sender, KeyEventArgs e)
+        private void OnKeyUp(object sender, KeyEventArgs e)
         {
             var keyNumber = (int)e.Code;
 
@@ -141,7 +143,7 @@ namespace Yellow.Core.InputManagement
             // the key was down, because system doesn't
             // send 'up' events multiple times, as it does
             // with key down events
-            OnKeyReleased(sender, e);
+            KeyUp?.Invoke(sender, e);
         }
     }
 }

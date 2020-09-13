@@ -63,8 +63,8 @@ namespace Yellow.Core
                 while (IsRunning)
                 {
                     Time.Update();
-                    screen.Update();
                     Input.Update();
+                    screen.Update();
                     World.Update();
                     Renderer.Render();
                 }
