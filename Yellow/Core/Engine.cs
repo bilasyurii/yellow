@@ -1,4 +1,6 @@
 ﻿using Yellow.Core.Boot;
+using Yellow.Core.ECS;
+using Yellow.Core.InputManagement;
 using Yellow.Core.ScreenManagement;
 
 namespace Yellow.Core
@@ -31,8 +33,9 @@ namespace Yellow.Core
             startup.Configure(configuration);
 
             var screen = new Screen(configuration.Screen);
-
-            var game = new Game(configuration.World, screen);
+            var world = new World(configuration.World);
+            var input = new Input(configuration.Input, screen);
+            var game = new Game(world, input, screen);
 
             return game;
         }

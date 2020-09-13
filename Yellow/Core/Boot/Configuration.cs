@@ -4,9 +4,11 @@ namespace Yellow.Core.Boot
 {
     public class Configuration
     {
-        public ScreenBuilder Screen { get; private set; } = new ScreenBuilder();
+        public ScreenBuilder Screen { get; } = new ScreenBuilder();
 
-        public WorldBuilder World { get; private set; } = new WorldBuilder();
+        public WorldBuilder World { get; } = new WorldBuilder();
+
+        public InputBuilder Input { get; } = new InputBuilder();
 
         public Configuration ConfigureScreen(Action<ScreenBuilder> configureScreenAction)
         {
@@ -18,6 +20,13 @@ namespace Yellow.Core.Boot
         public Configuration ConfigureWorld(Action<WorldBuilder> configureWorldAction)
         {
             configureWorldAction(World);
+
+            return this;
+        }
+
+        public Configuration ConfigureInput(Action<InputBuilder> configureInputAction)
+        {
+            configureInputAction(Input);
 
             return this;
         }

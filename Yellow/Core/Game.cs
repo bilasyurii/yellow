@@ -4,7 +4,6 @@ using Yellow.Core.ECS;
 using Yellow.Core.Time;
 using Yellow.Core.Rendering;
 using Yellow.Core.ScreenManagement;
-using Yellow.Core.Boot;
 using Yellow.Core.InputManagement;
 using System;
 
@@ -26,15 +25,15 @@ namespace Yellow.Core
 
         public Input Input { get; private set; }
 
-        public Game(WorldBuilder worldBuilder, Screen screen)
+        public Game(World world, Input input, Screen screen)
         {
             this.screen = screen;
             screen.WindowClosed += OnWindowClosed;
 
             Time = new TimeManager(this);
-            World = new World(worldBuilder);
+            World = world;
+            Input = input;
             Renderer = new Renderer(screen);
-            Input = new Input(screen);
 
             Locator.Provide(this);
         }
@@ -67,6 +66,7 @@ namespace Yellow.Core
                     screen.Update();
                     World.Update();
                     Renderer.Render();
+                    Console.WriteLine(Input.AxisRaw("Horizontal"));
                 }
             }
         }

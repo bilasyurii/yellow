@@ -1,6 +1,7 @@
 ﻿using SFML.Window;
 using System;
 using System.Collections.Generic;
+using Yellow.Core.Boot;
 using Yellow.Core.ScreenManagement;
 using static SFML.Window.Keyboard;
 
@@ -12,9 +13,11 @@ namespace Yellow.Core.InputManagement
 
         private readonly Dictionary<string, InputAxis> axises = new Dictionary<string, InputAxis>();
 
-        private bool[] previousStates;
+        private readonly bool[] previousStates;
 
-        private bool[] currentStates;
+        private readonly bool[] currentStates;
+
+        private readonly InputAxis[] axisKeys;
 
         private readonly int keyCount;
 
@@ -24,7 +27,7 @@ namespace Yellow.Core.InputManagement
 
         public event EventHandler<KeyEventArgs> KeyUp;
 
-        public Input(Screen screen)
+        public Input(InputBuilder builder, Screen screen)
         {
             this.screen = screen;
 
@@ -33,9 +36,15 @@ namespace Yellow.Core.InputManagement
             previousStates = new bool[keyCount];
             currentStates = new bool[keyCount];
             keyNames = new Dictionary<string, int>(keyCount);
+            axisKeys = new InputAxis[keyCount];
 
             InitEventHandlers();
             GenerateKeyNames();
+
+            if (builder.setupDefaultAxises)
+            {
+                SetupDefaultAxises();
+            }
         }
 
         public void Update()
@@ -53,15 +62,77 @@ namespace Yellow.Core.InputManagement
             return axises[name].raw;
         }
 
-        public void AddAxis(string name, Key negative, Key positive)
+        public void SetupAxis(string name, Key negative, Key positive, Key alternativeNegative, Key alternativePositive)
         {
-            axises.Add(name, new InputAxis()
+            if (axises.TryGetValue(name, out InputAxis axis))
             {
-                negative = negative,
-                positive = positive
-            });
+                axisKeys[(int)axis.negative] = null;
+                axisKeys[(int)axis.positive] = null;
 
-            // TODO add input handlers?
+                if (axis.alternativeNegative != Key.Unknown)
+                {
+                    axisKeys[(int)axis.alternativeNegative] = null;
+                    axisKeys[(int)axis.alternativePositive] = null;
+                }
+
+                axis.negative = negative;
+                axis.positive = positive;
+                axis.alternativeNegative = alternativeNegative;
+                axis.alternativePositive = alternativePositive;
+            }
+            else
+            {
+                axis = new InputAxis()
+                {
+                    negative = negative,
+                    positive = positive,
+                    alternativeNegative = alternativeNegative,
+                    alternativePositive = alternativePositive,
+                };
+
+                axises.Add(name, axis);
+            }
+
+            axisKeys[(int)negative] = axis;
+            axisKeys[(int)positive] = axis;
+            axisKeys[(int)alternativeNegative] = axis;
+            axisKeys[(int)alternativePositive] = axis;
+        }
+
+        public void SetupAxis(string name, Key negative, Key positive)
+        {
+            if (axises.TryGetValue(name, out InputAxis axis))
+            {
+                axisKeys[(int)axis.negative] = null;
+                axisKeys[(int)axis.positive] = null;
+
+                if (axis.alternativeNegative != Key.Unknown)
+                {
+                    axisKeys[(int)axis.alternativeNegative] = null;
+                    axisKeys[(int)axis.alternativePositive] = null;
+
+                    axis.alternativeNegative = Key.Unknown;
+                    axis.alternativePositive = Key.Unknown;
+                }
+
+                axis.negative = negative;
+                axis.positive = positive;
+            }
+            else
+            {
+                axis = new InputAxis()
+                {
+                    negative = negative,
+                    positive = positive,
+                    alternativeNegative = Key.Unknown,
+                    alternativePositive = Key.Unknown,
+                };
+
+                axises.Add(name, axis);
+            }
+
+            axisKeys[(int)negative] = axis;
+            axisKeys[(int)positive] = axis;
         }
 
         public InputAxis GetInputAxis(string name)
@@ -125,10 +196,51 @@ namespace Yellow.Core.InputManagement
         {
             var keyNumber = (int)e.Code;
 
+            if (keyNumber < 0)
+            {
+                return;
+            }
+
             currentStates[keyNumber] = true;
 
             if (!previousStates[keyNumber])
             {
+                InputAxis axis = axisKeys[keyNumber];
+
+                if (axis != null)
+                {
+                    if (axis.negative == e.Code || axis.alternativeNegative == e.Code)
+                    {
+                        axis.raw = -1;
+
+                        switch (axis.state)
+                        {
+                            case InputAxis.State.Positive:
+                                axis.state = InputAxis.State.Both;
+                                break;
+
+                            case InputAxis.State.None:
+                                axis.state = InputAxis.State.Negative;
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        axis.raw = 1;
+
+                        switch (axis.state)
+                        {
+                            case InputAxis.State.Negative:
+                                axis.state = InputAxis.State.Both;
+                                break;
+
+                            case InputAxis.State.None:
+                                axis.state = InputAxis.State.Positive;
+                                break;
+                        }
+                    }
+                }
+
                 KeyDown?.Invoke(sender, e);
             }
         }
@@ -137,13 +249,48 @@ namespace Yellow.Core.InputManagement
         {
             var keyNumber = (int)e.Code;
 
+            if (keyNumber < 0)
+            {
+                return;
+            }
+
             currentStates[keyNumber] = false;
+
+            InputAxis axis = axisKeys[keyNumber];
+
+            if (axis != null)
+            {
+                if (axis.state == InputAxis.State.Both)
+                {
+                    if (axis.negative == e.Code || axis.alternativeNegative == e.Code)
+                    {
+                        axis.state = InputAxis.State.Positive;
+                        axis.raw = 1;
+                    }
+                    else
+                    {
+                        axis.state = InputAxis.State.Negative;
+                        axis.raw = -1;
+                    }
+                }
+                else
+                {
+                    axis.state = InputAxis.State.None;
+                    axis.raw = 0;
+                }
+            }
 
             // we are sure here, that in previous frame
             // the key was down, because system doesn't
             // send 'up' events multiple times, as it does
             // with key down events
             KeyUp?.Invoke(sender, e);
+        }
+
+        private void SetupDefaultAxises()
+        {
+            SetupAxis("Horizontal", Key.A, Key.D, Key.Left, Key.Right);
+            SetupAxis("Vertical", Key.W, Key.S, Key.Up, Key.Down);
         }
     }
 }
