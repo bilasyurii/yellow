@@ -34,6 +34,7 @@ namespace Yellow.Core
             World = world;
             Input = input;
             Renderer = new Renderer(screen);
+            World.AddSystem(Renderer);
 
             Locator.Provide(this);
         }
@@ -66,7 +67,6 @@ namespace Yellow.Core
                     screen.Update();
                     World.Update();
                     Renderer.Render();
-                    Console.WriteLine(MathF.Round(Input.Axis("Horizontal"), 2));
                 }
             }
         }

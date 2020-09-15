@@ -32,7 +32,35 @@ namespace Yellow.Core.ECS
 
         public void AddSystem(System system)
         {
-             systems.Add(system);
+            systems.Add(system);
+
+            system.World = this;
+
+            // injecting lists of components, that are requested
+            // by system via marking properties with ComponentBag attribute
+            var attributeType = typeof(ComponentBag);
+            var properties = system.GetType().GetProperties();
+
+            foreach (var property in properties)
+            {
+                if (property.IsDefined(attributeType, false))
+                {
+                    var attributes = property.GetCustomAttributes(attributeType, false);
+
+                    if (attributes.Length != 0)
+                    {
+                        var componentsType = ((ComponentBag)attributes[0]).componentsType;
+
+                        if (!components.TryGetValue(componentsType, out var list))
+                        {
+                            list = new List<Component>();
+                            components[componentsType] = list;
+                        }
+
+                        property.SetValue(system, list);
+                    }
+                }
+            }
         }
 
         public void RemoveSystem(System system)
