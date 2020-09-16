@@ -309,7 +309,20 @@ namespace Yellow.Core.Components
                 UpdateLocalTransform();
             }
 
-            worldTransform = parent.worldTransform;
+            if (parent == null)
+            {
+                worldTransform = Transform.Identity;
+            }
+            else
+            {
+                if (parent.WorldDirty)
+                {
+                    parent.UpdateTransform();
+                }
+
+                worldTransform = parent.worldTransform;
+            }
+
             worldTransform.Combine(localTransform);
 
             worldDirty = false;

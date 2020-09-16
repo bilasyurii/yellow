@@ -94,8 +94,6 @@ namespace Yellow.Core.ECS
 
         public void RegisterComponent<T>(T component) where T : Component
         {
-            component.world = this;
-
             var type = typeof(T);
 
             if (components.TryGetValue(type, out var list))
@@ -113,8 +111,6 @@ namespace Yellow.Core.ECS
 
         public void RemoveComponent<T>(T component) where T : Component
         {
-            component.world = null;
-
             components[typeof(T)].Remove(component);
         }
     }

@@ -24,9 +24,22 @@ namespace Yellow.Core.Rendering
         {
             window.Clear(ClearColor);
 
+            var states = RenderStates.Default;
+
+            TransformComponent transform;
+
             foreach (var renderable in Renderable)
             {
-                window.Draw(((Graphic)renderable).drawable);
+                transform = renderable.owner.Transform;
+                
+                if (transform.WorldDirty)
+                {
+                    transform.UpdateTransform();
+                }
+
+                states.Transform.Combine(transform.WorldTransform);
+
+                window.Draw(((Graphic)renderable).drawable, states);
             }
 
             window.Display();
