@@ -38,7 +38,7 @@ namespace Yellow.Core.ECS
 
             // injecting lists of components, that are requested
             // by system via marking properties with ComponentBag attribute
-            var attributeType = typeof(ComponentBag);
+            var attributeType = typeof(ComponentsRequest);
             var properties = system.GetType().GetProperties();
 
             foreach (var property in properties)
@@ -49,7 +49,7 @@ namespace Yellow.Core.ECS
 
                     if (attributes.Length != 0)
                     {
-                        var componentsType = ((ComponentBag)attributes[0]).componentsType;
+                        var componentsType = ((ComponentsRequest)attributes[0]).componentsType;
 
                         if (!components.TryGetValue(componentsType, out var list))
                         {

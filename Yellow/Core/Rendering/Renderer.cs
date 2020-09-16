@@ -12,7 +12,7 @@ namespace Yellow.Core.Rendering
 
         public Color ClearColor { get; set; } = Color.Black;
 
-        [ComponentBag(typeof(Graphic))]
+        [ComponentsRequest(typeof(Graphic))]
         public List<Component> Renderable { private get; set; }
 
         public Renderer(Screen screen)

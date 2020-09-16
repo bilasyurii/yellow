@@ -3,11 +3,11 @@
 namespace Yellow.Core.ECS
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-    public class ComponentBag : Attribute
+    public class ComponentsRequest : Attribute
     {
         public Type componentsType;
 
-        public ComponentBag(Type componentsType)
+        public ComponentsRequest(Type componentsType)
         {
             this.componentsType = componentsType;
         }
