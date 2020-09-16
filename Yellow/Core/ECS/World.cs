@@ -37,7 +37,7 @@ namespace Yellow.Core.ECS
             system.World = this;
 
             // injecting lists of components, that are requested
-            // by system via marking properties with ComponentBag attribute
+            // by system via marking properties with ComponentsRequest attribute
             var attributeType = typeof(ComponentsRequest);
             var properties = system.GetType().GetProperties();
 
