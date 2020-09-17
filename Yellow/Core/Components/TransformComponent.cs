@@ -2,10 +2,13 @@
 using SFML.Graphics;
 using Yellow.Core.Utils;
 using System;
+using System.Collections.Generic;
+using System.Collections;
+using System.Linq;
 
 namespace Yellow.Core.Components
 {
-    public class TransformComponent : Component
+    public class TransformComponent : Component, IEnumerable<TransformComponent>
     {
         private float rotation;
 
@@ -41,13 +44,17 @@ namespace Yellow.Core.Components
             }
         }
 
+        private List<TransformComponent> children;
+
+        public int ChildCount { get; private set; } = 0;
+
         public bool Dirty { get; private set; } = true;
 
         public bool WorldDirty
         {
             get
             {
-                return worldDirty || Dirty || (Parent != null && Parent.WorldDirty);
+                return worldDirty || Dirty || (parent != null && parent.WorldDirty);
             }
         }
 
@@ -301,31 +308,120 @@ namespace Yellow.Core.Components
 
             Dirty = false;
         }
+
+        public void ForceUpdateTransform()
+        {
+            UpdateLocalTransform();
+
+            if (parent != null)
+            {
+                worldTransform = parent.worldTransform;
+
+                worldTransform.Combine(localTransform);
+            }
+            else
+            {
+                worldTransform = localTransform;
+            }
+
+            worldDirty = false;
+        }
         
-        public void UpdateTransform()
+        public void RecursiveUpdateTransform()
         {
             if (Dirty)
             {
                 UpdateLocalTransform();
-            }
 
-            if (parent == null)
-            {
-                worldTransform = Transform.Identity;
+                if (parent == null)
+                {
+                    worldTransform = Transform.Identity;
+                }
+                else
+                {
+                    if (parent.WorldDirty)
+                    {
+                        parent.RecursiveUpdateTransform();
+                    }
+
+                    worldTransform = parent.worldTransform;
+                }
+
+                worldTransform.Combine(localTransform);
+
+                worldDirty = false;
             }
-            else
+            else if (parent != null)
             {
                 if (parent.WorldDirty)
                 {
-                    parent.UpdateTransform();
-                }
+                    parent.RecursiveUpdateTransform();
 
-                worldTransform = parent.worldTransform;
+                    worldTransform = parent.worldTransform;
+
+                    worldTransform.Combine(localTransform);
+
+                    worldDirty = false;
+                }
+            }
+        }
+
+        public void AddChild(TransformComponent child)
+        {
+            if (children == null)
+            {
+                children = new List<TransformComponent>();
             }
 
-            worldTransform.Combine(localTransform);
+            child.Parent = this;
 
-            worldDirty = false;
+            children.Add(child);
+
+            ++ChildCount;
+        }
+
+        public bool RemoveChild(TransformComponent child)
+        {
+            if (children == null)
+            {
+                return false;
+            }
+
+            if (children.Remove(child))
+            {
+                child.Parent = null;
+
+                --ChildCount;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public IEnumerator<TransformComponent> GetEnumerator()
+        {
+            if (ChildCount == 0)
+            {
+                return Enumerable.Empty<TransformComponent>().GetEnumerator();
+            }
+
+            return children.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            if (ChildCount == 0)
+            {
+                return Enumerable.Empty<TransformComponent>().GetEnumerator();
+            }
+
+            return children.GetEnumerator();
+        }
+
+        public static implicit operator Transform(TransformComponent transform)
+        {
+            return transform.worldTransform;
         }
     }
 }

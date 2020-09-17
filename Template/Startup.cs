@@ -46,10 +46,11 @@ namespace Template
 
             var entity = game.MakeEntity();
             var transform = entity.Transform = new TransformComponent();
-            var graphic = new Graphic(sprite);
-            entity.Add(graphic);
+            var graphic = entity.Graphic = new Graphic(sprite);
             transform.Translate(100f, 100f);
             transform.SetPivot(35f, 19f);
+
+            game.World.Add(entity);
 
             game.Time.Events.Repeat(1000, 1, (args) => System.Console.WriteLine("Hello, Yellow!"));
 

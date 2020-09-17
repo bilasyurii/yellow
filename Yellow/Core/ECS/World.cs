@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Yellow.Core.Boot;
+using Yellow.Core.Components;
 using Yellow.Core.Utils;
 
 namespace Yellow.Core.ECS
@@ -13,6 +14,8 @@ namespace Yellow.Core.ECS
 
         private readonly Pool entities;
 
+        public readonly Entity root;
+
         public World(WorldBuilder worldBuilder)
         {
             var poolInitialSize = worldBuilder.entitiesPoolSize;
@@ -20,14 +23,14 @@ namespace Yellow.Core.ECS
             entities = new Pool(poolInitialSize);
 
             PrepopulatePool(poolInitialSize);
+
+            root = CreateEntity();
+            root.Transform = new TransformComponent();
         }
 
-        private void PrepopulatePool(int size)
+        public bool Add(Entity entity)
         {
-            for (int i = 0; i < size; ++i)
-            {
-                entities.Add(new Entity(this));
-            }
+            return root.AddChild(entity);
         }
 
         public void AddSystem(System system)
@@ -112,6 +115,14 @@ namespace Yellow.Core.ECS
         public void RemoveComponent<T>(T component) where T : Component
         {
             components[typeof(T)].Remove(component);
+        }
+
+        private void PrepopulatePool(int size)
+        {
+            for (int i = 0; i < size; ++i)
+            {
+                entities.Add(new Entity(this));
+            }
         }
     }
 }

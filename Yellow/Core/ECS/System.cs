@@ -2,7 +2,7 @@
 {
     public class System
     {
-        public World World { private get; set; }
+        public World World { protected get; set; }
 
         public virtual void Update() { }
     }

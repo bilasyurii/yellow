@@ -14,10 +14,7 @@ namespace Yellow.Core.ECS
 
         public TransformComponent Transform
         {
-            get
-            {
-                return transform;
-            }
+            get => transform;
 
             set
             {
@@ -34,7 +31,6 @@ namespace Yellow.Core.ECS
                     if (transform != null)
                     {
                         // removing from this.components not needed, as it will be simply overriden below
-                        World.RemoveComponent(transform);
                         Transform = null;
                     }
 
@@ -42,6 +38,39 @@ namespace Yellow.Core.ECS
                     value.owner = this;
 
                     components.Add(typeof(TransformComponent), value);
+                    World.RegisterComponent(value);
+                }
+            }
+        }
+
+        private Graphic graphic = null;
+
+        public Graphic Graphic
+        {
+            get => graphic;
+
+            set
+            {
+                if (value == null)
+                {
+                    // removing graphic
+                    components.Remove(typeof(Graphic));
+                    World.RemoveComponent(graphic);
+                    graphic = null;
+                }
+                else
+                {
+                    // if there was a graphic already - removing it first
+                    if (graphic != null)
+                    {
+                        // removing from this.components not needed, as it will be simply overriden below
+                        Graphic = null;
+                    }
+
+                    graphic = value;
+                    value.owner = this;
+
+                    components.Add(typeof(Graphic), value);
                     World.RegisterComponent(value);
                 }
             }
@@ -115,6 +144,28 @@ namespace Yellow.Core.ECS
 
             components.Remove(component.GetType());
             World.RemoveComponent(component);
+        }
+
+        public bool AddChild(Entity entity)
+        {
+            if (transform == null || entity.transform == null)
+            {
+                return false;
+            }
+
+            transform.AddChild(entity.transform);
+            
+            return true;
+        }
+
+        public bool RemoveChild(Entity entity)
+        {
+            if (transform == null || entity.transform == null)
+            {
+                return false;
+            }
+
+            return transform.RemoveChild(entity.transform);
         }
     }
 }

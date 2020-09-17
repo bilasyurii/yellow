@@ -2,9 +2,9 @@
 using SFML.Graphics;
 using Yellow.Core.ECS;
 using Yellow.Core.Time;
-using Yellow.Core.Rendering;
 using Yellow.Core.ScreenManagement;
 using Yellow.Core.InputManagement;
+using Yellow.Core.Systems.Rendering;
 using System;
 
 namespace Yellow.Core
