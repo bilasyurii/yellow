@@ -569,6 +569,21 @@ namespace Yellow.Core.Utils
             return new Vector2i((int)vec.x, (int)vec.y);
         }
 
+        public static implicit operator Vec2(Vector2u vec)
+        {
+            return new Vec2(vec.X, vec.Y);
+        }
+
+        public static implicit operator Vec2(Vector2f vec)
+        {
+            return new Vec2(vec.X, vec.Y);
+        }
+
+        public static implicit operator Vec2(Vector2i vec)
+        {
+            return new Vec2(vec.X, vec.Y);
+        }
+
         public static Vec2 Longer(Vec2 a, Vec2 b)
         {
             if (b.LengthSquared > a.LengthSquared)

@@ -6,6 +6,7 @@ using Yellow.Core.ScreenManagement;
 using Yellow.Core.InputManagement;
 using Yellow.Core.Systems.Rendering;
 using System;
+using Yellow.Core.CameraManagement;
 
 namespace Yellow.Core
 {
@@ -17,13 +18,15 @@ namespace Yellow.Core
 
         public IAssetManager Assets { get; } = Locator.Get<IAssetManager>();
 
-        public TimeManager Time { get; private set; }
+        public TimeManager Time { get; }
 
-        public World World { get; private set; }
+        public World World { get; }
 
-        public Renderer Renderer { get; private set; }
+        public Renderer Renderer { get; }
 
-        public Input Input { get; private set; }
+        public Input Input { get; }
+
+        public CameraManager Cameras { get; }
 
         public Game(World world, Input input, Screen screen)
         {
