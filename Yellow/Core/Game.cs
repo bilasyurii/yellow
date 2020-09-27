@@ -4,9 +4,8 @@ using Yellow.Core.ECS;
 using Yellow.Core.Time;
 using Yellow.Core.ScreenManagement;
 using Yellow.Core.InputManagement;
-using Yellow.Core.Systems.Rendering;
+using Yellow.Core.Systems;
 using System;
-using Yellow.Core.CameraManagement;
 
 namespace Yellow.Core
 {
@@ -36,8 +35,13 @@ namespace Yellow.Core
             Time = new TimeManager(this);
             World = world;
             Input = input;
+            Cameras = new CameraManager(screen);
             Renderer = new Renderer(screen);
+
+            World.AddSystem(Cameras);
             World.AddSystem(Renderer);
+
+            World.Prepare();
 
             Locator.Provide(this);
         }

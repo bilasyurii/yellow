@@ -1,32 +1,22 @@
 ﻿using SFML.Graphics;
-using Yellow.Core.ScreenManagement;
-using Yellow.Core.Utils;
+using Yellow.Core.ECS;
 
-namespace Yellow.Core.CameraManagement
+namespace Yellow.Core.Components
 {
-    public class Camera
+    public class Camera : Component
     {
         private readonly View view;
 
         private float currentZoom = 1f;
 
-        public Vec2 position;
-
         public float zoom = 1f;
 
         public string Name { get; }
 
-        public Camera(Screen screen, string name)
+        public Camera(View view, string name)
         {
-            view = screen.Window.DefaultView;
+            this.view = view;
             Name = name;
-        }
-
-        public Camera Move(Vec2 movement)
-        {
-            position.Add(movement);
-
-            return this;
         }
 
         public float Zoom(float factor)
@@ -34,9 +24,9 @@ namespace Yellow.Core.CameraManagement
             return zoom *= factor;
         }
 
-        public void SetupRenderTarget(RenderTarget target)
+        public void Update(RenderTarget target, TransformComponent transform)
         {
-            view.Center = position;
+            view.Center = transform.Position;
 
             if (zoom != currentZoom)
             {

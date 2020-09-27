@@ -2,7 +2,7 @@
 using Yellow.Core.ECS;
 using Yellow.Core.ScreenManagement;
 
-namespace Yellow.Core.Systems.Rendering
+namespace Yellow.Core.Systems
 {
     public class Renderer : ECS.System
     {

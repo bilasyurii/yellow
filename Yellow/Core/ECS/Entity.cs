@@ -167,5 +167,10 @@ namespace Yellow.Core.ECS
 
             return transform.RemoveChild(entity.transform);
         }
+
+        public static implicit operator TransformComponent(Entity entity)
+        {
+            return entity.transform;
+        }
     }
 }

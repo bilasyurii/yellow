@@ -61,6 +61,8 @@ namespace Yellow.Core.ECS
                         }
 
                         property.SetValue(system, list);
+
+                        continue;
                     }
                 }
             }
@@ -69,6 +71,14 @@ namespace Yellow.Core.ECS
         public void RemoveSystem(System system)
         {
             systems.Remove(system);
+        }
+
+        public void Prepare()
+        {
+            foreach (var system in systems)
+            {
+                system.Prepare();
+            }
         }
 
         public void Tick()
