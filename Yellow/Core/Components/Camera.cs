@@ -5,18 +5,26 @@ namespace Yellow.Core.Components
 {
     public class Camera : Component
     {
-        private readonly View view;
+        private View view;
 
         private float currentZoom = 1f;
 
         public float zoom = 1f;
 
-        public string Name { get; }
+        public string name;
+
+        public Camera() { }
 
         public Camera(View view, string name)
         {
             this.view = view;
-            Name = name;
+            this.name = name;
+        }
+
+        public void Setup(View view, string name)
+        {
+            this.view = view;
+            this.name = name;
         }
 
         public float Zoom(float factor)

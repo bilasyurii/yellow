@@ -23,8 +23,11 @@ namespace Yellow.Core.Systems
         public Camera Create(string name)
         {
             var entity = World.CreateEntity();
-            var transform = new TransformComponent(World.root);
-            var camera = new Camera(screen.Window.DefaultView, name);
+            var transform = World.CreateComponent<TransformComponent>();
+            var camera = World.CreateComponent<Camera>();
+
+            transform.Parent = World.root;
+            camera.Setup(screen.Window.DefaultView, name);
 
             entity.Transform = transform;
             entity.Add(camera);
@@ -49,7 +52,7 @@ namespace Yellow.Core.Systems
 
         public Camera this[string name]
         {
-            get => (Camera)Cameras.Find(camera => ((Camera)camera).Name == name);
+            get => (Camera)Cameras.Find(camera => ((Camera)camera).name == name);
         }
 
         public IEnumerator<Camera> GetEnumerator()

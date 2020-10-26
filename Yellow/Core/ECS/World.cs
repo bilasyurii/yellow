@@ -12,7 +12,9 @@ namespace Yellow.Core.ECS
 
         private readonly Dictionary<Type, List<Component>> components = new Dictionary<Type, List<Component>>();
 
-        private readonly Pool entities;
+        private readonly Dictionary<Type, IPool> componentsPool = new Dictionary<Type, IPool>();
+
+        private readonly Pool<Entity> entities;
 
         public readonly Entity root;
 
@@ -20,17 +22,12 @@ namespace Yellow.Core.ECS
         {
             var poolInitialSize = worldBuilder.entitiesPoolSize;
 
-            entities = new Pool(poolInitialSize);
+            entities = new Pool<Entity>(poolInitialSize);
 
             PrepopulatePool(poolInitialSize);
 
             root = CreateEntity();
-            root.Transform = new TransformComponent();
-        }
-
-        public bool Add(Entity entity)
-        {
-            return root.AddChild(entity);
+            root.Transform = CreateComponent<TransformComponent>();
         }
 
         public void AddSystem(System system)
@@ -81,7 +78,7 @@ namespace Yellow.Core.ECS
             }
         }
 
-        public void Tick()
+        public void FixedUpdate()
         {
         }
 
@@ -95,44 +92,58 @@ namespace Yellow.Core.ECS
 
         public Entity CreateEntity()
         {
-            if (entities.IsEmpty)
-            {
-                return new Entity(this);
-            }
-            else
-            {
-                return (Entity)entities.Get();
-            }
+            var entity = entities.Get();
+
+            entity.world = this;
+
+            return entity;
         }
 
-        public void RegisterComponent<T>(T component) where T : Component
+        public bool Add(Entity entity)
+        {
+            return root.AddChild(entity);
+        }
+
+        public T CreateComponent<T>() where T : Component, new()
         {
             var type = typeof(T);
+            List<Component> list;
 
-            if (components.TryGetValue(type, out var list))
+            if (!componentsPool.TryGetValue(type, out var pool))
             {
-                list.Add(component);
+                pool = new Pool<T>();
+
+                if (!components.TryGetValue(type, out list))
+                {
+                    list = new List<Component>();
+                    components.Add(type, list);
+                }
+
+                componentsPool.Add(type, pool);
             }
             else
             {
-                components.Add(type, new List<Component>()
-                {
-                    component
-                });
+                list = components[type];
             }
+
+            var component = (T)pool.Get();
+
+            list.Add(component);
+
+            return component;
         }
 
         public void RemoveComponent<T>(T component) where T : Component
         {
-            components[typeof(T)].Remove(component);
+            var type = typeof(T);
+
+            components[type].Remove(component);
+            componentsPool[type].Add(component);
         }
 
-        private void PrepopulatePool(int size)
+        private void PrepopulatePool(int amount)
         {
-            for (int i = 0; i < size; ++i)
-            {
-                entities.Add(new Entity(this));
-            }
+            entities.Populate(amount);
         }
     }
 }

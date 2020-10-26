@@ -45,8 +45,11 @@ namespace Template
             var sprite = game.MakeSprite("tile");
 
             var entity = game.MakeEntity();
-            var transform = entity.Transform = new TransformComponent();
-            var graphic = entity.Graphic = new Graphic(sprite);
+            var transform = entity.Transform = game.World.CreateComponent<TransformComponent>();
+            var graphic = entity.Graphic = game.World.CreateComponent<Graphic>();
+
+            graphic.drawable = sprite;
+
             transform.Translate(100f, 100f);
             transform.SetPivot(35f, 19f);
 

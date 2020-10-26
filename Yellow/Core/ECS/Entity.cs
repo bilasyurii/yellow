@@ -6,9 +6,9 @@ namespace Yellow.Core.ECS
 {
     public class Entity
     {
-        private readonly Dictionary<Type, Component> components;
+        private readonly Dictionary<Type, Component> components = new Dictionary<Type, Component>();
 
-        public World World { get; private set; }
+        public World world;
 
         private TransformComponent transform = null;
 
@@ -22,7 +22,7 @@ namespace Yellow.Core.ECS
                 if (value == null)
                 {
                     components.Remove(typeof(TransformComponent));
-                    World.RemoveComponent(transform);
+                    world.RemoveComponent(transform);
                     transform = null;
                 }
                 else
@@ -38,7 +38,6 @@ namespace Yellow.Core.ECS
                     value.owner = this;
 
                     components.Add(typeof(TransformComponent), value);
-                    World.RegisterComponent(value);
                 }
             }
         }
@@ -55,7 +54,7 @@ namespace Yellow.Core.ECS
                 {
                     // removing graphic
                     components.Remove(typeof(Graphic));
-                    World.RemoveComponent(graphic);
+                    world.RemoveComponent(graphic);
                     graphic = null;
                 }
                 else
@@ -71,15 +70,15 @@ namespace Yellow.Core.ECS
                     value.owner = this;
 
                     components.Add(typeof(Graphic), value);
-                    World.RegisterComponent(value);
                 }
             }
         }
 
+        public Entity() { }
+
         public Entity(World world)
         {
-            World = world;
-            components = new Dictionary<Type, Component>();
+            this.world = world;;
         }
 
         public bool Has(Type componentType)
@@ -116,7 +115,6 @@ namespace Yellow.Core.ECS
             component.owner = this;
 
             components.Add(typeof(T), component);
-            World.RegisterComponent(component);
         }
 
         public void Add(Component component)
@@ -124,7 +122,6 @@ namespace Yellow.Core.ECS
             component.owner = this;
 
             components.Add(component.GetType(), component);
-            World.RegisterComponent(component);
         }
 
         public void Remove<T>() where T : Component
@@ -135,7 +132,7 @@ namespace Yellow.Core.ECS
             component.owner = null;
 
             components.Remove(type);
-            World.RemoveComponent(component);
+            world.RemoveComponent(component);
         }
 
         public void Remove(Component component)
@@ -143,7 +140,7 @@ namespace Yellow.Core.ECS
             component.owner = null;
 
             components.Remove(component.GetType());
-            World.RemoveComponent(component);
+            world.RemoveComponent(component);
         }
 
         public bool AddChild(Entity entity)

@@ -2,13 +2,13 @@
 
 namespace Yellow.Core.Utils
 {
-    public class Pool
+    public class Pool<T> : IPool where T : class, new()
     {
-        private readonly List<object> objects;
+        private readonly List<T> objects;
 
         public Pool(int startingCapacity = 10)
         {
-            objects = new List<object>(startingCapacity);
+            objects = new List<T>(startingCapacity);
         }
 
         public bool IsEmpty
@@ -19,29 +19,45 @@ namespace Yellow.Core.Utils
             }
         }
 
-        public object Get()
+        public T Get()
         {
             var index = objects.Count - 1;
-            var obj = objects[index];
+            
+            if (index < 0)
+            {
+                return new T();
+            }
+            else
+            {
+                var obj = objects[index];
 
-            objects.RemoveAt(index);
+                objects.RemoveAt(index);
 
-            return obj;
+                return obj;
+            }
         }
 
-        public T Get<T>() where T : class
+        public void Populate(int amount)
         {
-            var index = objects.Count - 1;
-            var obj = objects[index];
+            for (int i = 0; i < amount; ++i)
+            {
+                objects.Add(new T());
+            }
+        }
 
-            objects.RemoveAt(index);
-
-            return (T)obj;
+        public void Add(T obj)
+        {
+            objects.Add(obj);
         }
 
         public void Add(object obj)
         {
-            objects.Add(obj);
+            objects.Add((T)obj);
+        }
+
+        object IPool.Get()
+        {
+            return Get();
         }
     }
 }
