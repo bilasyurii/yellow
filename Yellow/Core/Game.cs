@@ -6,6 +6,7 @@ using Yellow.Core.ScreenManagement;
 using Yellow.Core.InputManagement;
 using Yellow.Core.Systems;
 using System;
+using Yellow.Core.Components;
 
 namespace Yellow.Core
 {
@@ -59,6 +60,15 @@ namespace Yellow.Core
         public Entity MakeEntity()
         {
             return World.CreateEntity();
+        }
+
+        public Entity MakeGameObject()
+        {
+            var entity = World.CreateEntity();
+
+            entity.Transform = World.CreateComponent<TransformComponent>();
+
+            return entity;
         }
 
         public void Start()
