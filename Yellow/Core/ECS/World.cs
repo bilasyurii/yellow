@@ -10,7 +10,7 @@ namespace Yellow.Core.ECS
     {
         private readonly List<System> systems = new List<System>();
 
-        private readonly Dictionary<Type, List<Component>> components = new Dictionary<Type, List<Component>>();
+        private readonly Dictionary<Type, IComponentBag> components = new Dictionary<Type, IComponentBag>();
 
         private readonly Dictionary<Type, IPool> componentsPool = new Dictionary<Type, IPool>();
 
@@ -36,31 +36,26 @@ namespace Yellow.Core.ECS
 
             system.World = this;
 
-            // injecting lists of components, that are requested
-            // by system via marking properties with ComponentsRequest attribute
-            var attributeType = typeof(ComponentsRequest);
+            // injecting component bags
+            var bagType = typeof(ComponentBag<>);
             var properties = system.GetType().GetProperties();
 
             foreach (var property in properties)
             {
-                if (property.IsDefined(attributeType, false))
+                var propertyType = property.PropertyType;
+
+                if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == bagType)
                 {
-                    var attributes = property.GetCustomAttributes(attributeType, false);
+                    var componentsType = propertyType.GetGenericArguments()[0];
 
-                    if (attributes.Length != 0)
+                    if (!components.TryGetValue(componentsType, out var bag))
                     {
-                        var componentsType = ((ComponentsRequest)attributes[0]).componentsType;
-
-                        if (!components.TryGetValue(componentsType, out var list))
-                        {
-                            list = new List<Component>();
-                            components[componentsType] = list;
-                        }
-
-                        property.SetValue(system, list);
-
-                        continue;
+                        var constructedType = bagType.MakeGenericType(new[] { componentsType });
+                        bag = (IComponentBag)Activator.CreateInstance(constructedType);
+                        components[componentsType] = bag;
                     }
+
+                    property.SetValue(system, bag);
                 }
             }
         }
@@ -107,28 +102,28 @@ namespace Yellow.Core.ECS
         public T CreateComponent<T>() where T : Component, new()
         {
             var type = typeof(T);
-            List<Component> list;
+            IComponentBag bag;
 
             if (!componentsPool.TryGetValue(type, out var pool))
             {
                 pool = new Pool<T>();
 
-                if (!components.TryGetValue(type, out list))
+                if (!components.TryGetValue(type, out bag))
                 {
-                    list = new List<Component>();
-                    components.Add(type, list);
+                    bag = new ComponentBag<T>();
+                    components.Add(type, bag);
                 }
 
                 componentsPool.Add(type, pool);
             }
             else
             {
-                list = components[type];
+                bag = components[type];
             }
 
             var component = (T)pool.Get();
 
-            list.Add(component);
+            bag.Add(component);
 
             return component;
         }

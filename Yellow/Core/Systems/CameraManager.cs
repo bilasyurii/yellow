@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Yellow.Core.Components;
 using Yellow.Core.ECS;
 using Yellow.Core.ScreenManagement;
+using System.Linq;
 
 namespace Yellow.Core.Systems
 {
@@ -10,8 +11,7 @@ namespace Yellow.Core.Systems
     {
         private readonly Screen screen;
 
-        [ComponentsRequest(typeof(Camera))]
-        public List<Component> Cameras { private get; set; }
+        public ComponentBag<Camera> Cameras { private get; set; }
 
         public Camera Active { get; private set; }
 
@@ -52,13 +52,12 @@ namespace Yellow.Core.Systems
 
         public Camera this[string name]
         {
-            get => (Camera)Cameras.Find(camera => ((Camera)camera).name == name);
+            get => Cameras.First(camera => camera.name == name);
         }
 
         public IEnumerator<Camera> GetEnumerator()
         {
-            throw new System.Exception();
-            //return Cameras.GetEnumerator();
+            return Cameras.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

@@ -30,7 +30,6 @@ namespace Yellow.Core.ECS
                     // if there was a transform already - removing it first
                     if (transform != null)
                     {
-                        // removing from this.components not needed, as it will be simply overriden below
                         Transform = null;
                     }
 
@@ -62,7 +61,6 @@ namespace Yellow.Core.ECS
                     // if there was a graphic already - removing it first
                     if (graphic != null)
                     {
-                        // removing from this.components not needed, as it will be simply overriden below
                         Graphic = null;
                     }
 

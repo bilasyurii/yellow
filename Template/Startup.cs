@@ -58,6 +58,10 @@ namespace Template
             game.Time.Events.Repeat(1000, 1, (args) => System.Console.WriteLine("Hello, Yellow!"));
 
             game.Time.Events.Loop(500, (args) => System.Console.WriteLine("Hello!"));
+
+            var camera = game.Cameras.Active;
+
+            game.Time.Events.Loop(20, (args) => camera.owner.Transform.Translate(1f, 0f));
         }
 
         public void OnGameEnded()
