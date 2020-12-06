@@ -4,7 +4,7 @@ namespace Yellow.Core.ECS
 {
     public interface IComponentBag: IEnumerable
     {
-        void Add(Component component);
-        void Remove(Component component);
+        void Add(IComponent component);
+        void Remove(IComponent component);
     }
 }

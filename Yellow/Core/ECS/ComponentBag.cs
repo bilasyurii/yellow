@@ -4,16 +4,16 @@ using System.Linq;
 
 namespace Yellow.Core.ECS
 {
-    public class ComponentBag<T> : IComponentBag, IEnumerable<T> where T: Component
+    public class ComponentBag<T> : IComponentBag, IEnumerable<T> where T: IComponent
     {
         private readonly List<T> components = new List<T>();
 
-        public void Add(Component component)
+        public void Add(IComponent component)
         {
             components.Add((T)component);
         }
 
-        public void Remove(Component component)
+        public void Remove(IComponent component)
         {
             components.Remove((T)component);
         }

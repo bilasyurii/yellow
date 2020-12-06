@@ -3,7 +3,7 @@ using Yellow.Core.ECS;
 
 namespace Yellow.Core.Components
 {
-    public class Graphic: Component
+    public class Graphic: BaseComponent
     {
         public Drawable drawable;
 

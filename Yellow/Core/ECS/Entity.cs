@@ -6,7 +6,7 @@ namespace Yellow.Core.ECS
 {
     public class Entity
     {
-        private readonly Dictionary<Type, Component> components = new Dictionary<Type, Component>();
+        private readonly Dictionary<Type, IComponent> components = new Dictionary<Type, IComponent>();
 
         public World world;
 
@@ -34,7 +34,7 @@ namespace Yellow.Core.ECS
                     }
 
                     transform = value;
-                    value.owner = this;
+                    value.Owner = this;
 
                     components.Add(typeof(TransformComponent), value);
                 }
@@ -65,7 +65,7 @@ namespace Yellow.Core.ECS
                     }
 
                     graphic = value;
-                    value.owner = this;
+                    value.Owner = this;
 
                     components.Add(typeof(Graphic), value);
                 }
@@ -89,12 +89,12 @@ namespace Yellow.Core.ECS
             return components.ContainsKey(typeof(T));
         }
 
-        public T Get<T>() where T : Component
+        public T Get<T>() where T : IComponent
         {
             return (T) components[typeof (T)];
         }
 
-        public bool TryGet<T>(out T component) where T : Component
+        public bool TryGet<T>(out T component) where T : class, IComponent
         {
             if (components.ContainsKey(typeof(T)))
             {
@@ -108,34 +108,34 @@ namespace Yellow.Core.ECS
             return false;
         }
 
-        public void Add<T>(T component) where T : Component
+        public void Add<T>(T component) where T : IComponent
         {
-            component.owner = this;
+            component.Owner = this;
 
             components.Add(typeof(T), component);
         }
 
-        public void Add(Component component)
+        public void Add(IComponent component)
         {
-            component.owner = this;
+            component.Owner = this;
 
             components.Add(component.GetType(), component);
         }
 
-        public void Remove<T>() where T : Component
+        public void Remove<T>() where T : IComponent
         {
             var type = typeof(T);
             var component = components[type];
 
-            component.owner = null;
+            component.Owner = null;
 
             components.Remove(type);
             world.RemoveComponent(component);
         }
 
-        public void Remove(Component component)
+        public void Remove(IComponent component)
         {
-            component.owner = null;
+            component.Owner = null;
 
             components.Remove(component.GetType());
             world.RemoveComponent(component);

@@ -99,7 +99,7 @@ namespace Yellow.Core.ECS
             return root.AddChild(entity);
         }
 
-        public T CreateComponent<T>() where T : Component, new()
+        public T CreateComponent<T>() where T : class, IComponent, new()
         {
             var type = typeof(T);
             IComponentBag bag;
@@ -128,7 +128,7 @@ namespace Yellow.Core.ECS
             return component;
         }
 
-        public void RemoveComponent<T>(T component) where T : Component
+        public void RemoveComponent<T>(T component) where T : IComponent
         {
             var type = typeof(T);
 

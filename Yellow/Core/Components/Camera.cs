@@ -3,7 +3,7 @@ using Yellow.Core.ECS;
 
 namespace Yellow.Core.Components
 {
-    public class Camera : Component
+    public class Camera : BaseComponent
     {
         private View view;
 

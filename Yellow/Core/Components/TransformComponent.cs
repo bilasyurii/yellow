@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Yellow.Core.Components
 {
-    public class TransformComponent : Component, IEnumerable<TransformComponent>
+    public class TransformComponent : BaseComponent, IEnumerable<TransformComponent>
     {
         private float rotation;
 
